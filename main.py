@@ -2,7 +2,7 @@ import os
 from typing import List, Tuple, Any, Optional
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
@@ -11,10 +11,12 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.vectorstores import VectorStore
 from langchain_core.documents import Document
 from langchain_core.runnables import Runnable
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
 
 import torch
 
-from secrets import OPENAI_API_KEY
+from _secrets import OPENAI_API_KEY
 
 # Configuration
 PDF_PATH = "examples/pdf/psp.pdf"  # Path to your PDF file
@@ -23,6 +25,7 @@ DB_FAISS_PATH = "vectorstore/db_faiss"  # Path to save/load FAISS DB
 gpt_model = "gpt-4o-mini"
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
+
 
 def load_pdf(pdf_path: str) -> List[Document]:
     """Load PDF file and return a list of Document objects.
@@ -84,24 +87,20 @@ def create_vector_store(splits: List[Document], save_path: str = DB_FAISS_PATH) 
     vectorstore.save_local(save_path)
     return vectorstore
 
-# 3. Set up the RAG chain
-def setup_rag_chain(vectorstore: VectorStore) -> Runnable:
-    """Create RAG chain with retriever and LLM.
 
-    Args:
-        vectorstore: Vector store instance
+def create_bm25_retriever(splits: List[Document]) -> BM25Retriever:
+    """Create a BM25 keyword retriever from document splits."""
+    return BM25Retriever.from_documents(splits)
 
-    Returns:
-        Configured RAG chain
-    """
-    # Initialize GPT model
+
+def setup_rag_chain(vectorstore: VectorStore, bm25_retriever: BM25Retriever) -> Tuple[Runnable, EnsembleRetriever]:
+    """Create RAG chain with hybrid retriever and LLM."""
     llm = ChatOpenAI(
         model_name=gpt_model,
         temperature=0.7,
         openai_api_key=OPENAI_API_KEY
     )
 
-    # Define prompt template
     template = """Answer the question based only on the following context:
     {context}
     
@@ -109,46 +108,55 @@ def setup_rag_chain(vectorstore: VectorStore) -> Runnable:
     """
     prompt = ChatPromptTemplate.from_template(template)
 
-    # Set up retriever
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    # Hybrid retriever: combine vector and keyword retrievers
+    faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    hybrid_retriever = EnsembleRetriever(
+        retrievers=[faiss_retriever, bm25_retriever],
+        weights=[0.5, 0.5]
+    )
 
-    # Create RAG chain
     rag_chain = (
-        {"context": retriever, "question": RunnablePassthrough()}
+        {"context": hybrid_retriever, "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
 
-    return rag_chain
-
+    return rag_chain, hybrid_retriever
 
 
 def main() -> None:
     """Main function to run the RAG system."""
-    
+
+    document = load_pdf(PDF_PATH)
+    splits = split_documents(document)
+
     # Check if vector store exists
     if not os.path.exists(DB_FAISS_PATH):
-        document = load_pdf(PDF_PATH)
-        splits = split_documents(document)
-
         # Create and save vector store
         vectorstore = create_vector_store(splits)
     else:
-        print("Loading existing vector store...")
+        # Load existing vector store
         embeddings = HuggingFaceEmbeddings(model_name=MODEL_NAME)
         vectorstore = FAISS.load_local(
             DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
 
-    # Set up RAG chain
-    rag_chain = setup_rag_chain(vectorstore)
+    bm25_retriever = create_bm25_retriever(splits)
+    rag_chain, hybrid_retriever = setup_rag_chain(vectorstore, bm25_retriever)
 
-    # Example usage
     while True:
         question = input("\nAsk a question (or 'quit' to exit): ")
         if question.lower() == 'quit':
             break
 
+        # Print retrieved documents
+        # Retrieve documents using the hybrid retriever
+        # retrieved_docs = hybrid_retriever.invoke(question)
+        # print("\nRetrieved Documents:")
+        # for i, doc in enumerate(retrieved_docs):
+        #     print(f"Document {i + 1}: {doc.page_content}")
+
+        # Invoke the RAG chain
         answer = rag_chain.invoke(question)
         print("\nAnswer:", answer)
 
