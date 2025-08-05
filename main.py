@@ -13,6 +13,7 @@ from langchain_core.documents import Document
 from langchain_core.runnables import Runnable
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
+from sentence_transformers import CrossEncoder
 
 import torch
 
@@ -25,6 +26,7 @@ MODEL_NAME = "ufal/robeczech-base"  # RobeCzech model
 DB_FAISS_PATH = "vectorstore/db_faiss"  # Path to save/load FAISS DB
 gpt_model = "gpt-4o-mini"
 gpt_rewrtiter = "gpt-4.1-nano"
+reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -145,6 +147,27 @@ class Rewriter:
 
         return versions
 
+class Reranker:
+    """Class to handle reranking of retrieved documents."""
+
+    def __init__(self, hf_model_name: str):
+        self.model = CrossEncoder(hf_model_name, device=torch_device)
+
+    def rerank(self, user_query: str, docs: List[Document], top_n: int = 5) -> List[Document]:
+        # Prepare pairs for scoring
+        pairs = [(user_query, doc.page_content) for doc in docs]
+
+        # Predict scores using the cross-encoder model
+        scores = self.model.predict(pairs)
+
+        # Sort docs by score, descending
+        reranked = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
+
+        # Return only top_n
+        reranked_docs = [doc for doc, score in reranked[:top_n]]
+
+        return reranked_docs
+
 def main() -> None:
     """Main function to run the RAG system."""
 
@@ -170,29 +193,27 @@ def main() -> None:
         prompt_text=rewriter_prompt_text
     )
 
-    
+    # Setup reranker
+    reranker = Reranker(reranker_model)
 
     while True:
         user_query = input("\nAsk a question (or 'quit' to exit): ")
         if user_query.lower() == 'quit':
             break
-
+        
+        # Rewrite the user query into multiple versions
         query_versions = rewriter_llm.rewrite(user_query)
 
+        # Independently retrieve documents for each rewritten query
         docs = []
         for q in query_versions:
             docs.extend(hybrid_retriever.invoke(q))
 
-
-        # Print retrieved documents
-        # Retrieve documents using the hybrid retriever
-        # retrieved_docs = hybrid_retriever.invoke(question)
-        # print("\nRetrieved Documents:")
-        # for i, doc in enumerate(retrieved_docs):
-        #     print(f"Document {i + 1}: {doc.page_content}")
+        # Rerank documents
+        reranked_docs = reranker.rerank(user_query, docs, top_n=5)
 
         # Concatenate all retrieved documents as context
-        context = "\n\n".join(doc.page_content for doc in docs)
+        context = "\n\n".join(doc.page_content for doc in reranked_docs)
 
         # Use original user_query and all docs as context
         answer = rag_chain.invoke({"context": context, "question": user_query})
