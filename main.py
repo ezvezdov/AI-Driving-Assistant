@@ -4,7 +4,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
@@ -16,6 +16,7 @@ from langchain_community.retrievers import BM25Retriever
 
 import torch
 
+from prompts.en import rewriter_prompt_text
 from _secrets import OPENAI_API_KEY
 
 # Configuration
@@ -23,6 +24,7 @@ PDF_PATH = "examples/pdf/psp.pdf"  # Path to your PDF file
 MODEL_NAME = "ufal/robeczech-base"  # RobeCzech model
 DB_FAISS_PATH = "vectorstore/db_faiss"  # Path to save/load FAISS DB
 gpt_model = "gpt-4o-mini"
+gpt_rewrtiter = "gpt-4.1-nano"
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -116,14 +118,32 @@ def setup_rag_chain(vectorstore: VectorStore, bm25_retriever: BM25Retriever) -> 
     )
 
     rag_chain = (
-        {"context": hybrid_retriever, "question": RunnablePassthrough()}
-        | prompt
+        # {"context": hybrid_retriever, "question": RunnablePassthrough()}
+        prompt
         | llm
         | StrOutputParser()
     )
 
     return rag_chain, hybrid_retriever
 
+class Rewriter:
+    """Class to handle query rewriting using a language model."""
+
+    def __init__(self, rewriter_llm: str , prompt_text: str):
+        self.llm  = ChatOpenAI(
+            model_name=rewriter_llm,
+            temperature=0.7,
+            openai_api_key=OPENAI_API_KEY
+        )
+        self.prompt = PromptTemplate.from_template(prompt_text)
+
+    def rewrite(self, user_query: str) -> List[str]:
+        """Rewrite the user's query into multiple versions."""
+        formatted_prompt = self.prompt.format(user_query=user_query)
+        response = self.llm.invoke(formatted_prompt)
+        versions = [v.strip() for v in response.content.split("===") if v and not v.startswith("Version")]
+
+        return versions
 
 def main() -> None:
     """Main function to run the RAG system."""
@@ -144,10 +164,25 @@ def main() -> None:
     bm25_retriever = create_bm25_retriever(splits)
     rag_chain, hybrid_retriever = setup_rag_chain(vectorstore, bm25_retriever)
 
+    # Setup rewriter LLM and prompt
+    rewriter_llm = Rewriter(
+        rewriter_llm=gpt_rewrtiter,
+        prompt_text=rewriter_prompt_text
+    )
+
+    
+
     while True:
-        question = input("\nAsk a question (or 'quit' to exit): ")
-        if question.lower() == 'quit':
+        user_query = input("\nAsk a question (or 'quit' to exit): ")
+        if user_query.lower() == 'quit':
             break
+
+        query_versions = rewriter_llm.rewrite(user_query)
+
+        docs = []
+        for q in query_versions:
+            docs.extend(hybrid_retriever.invoke(q))
+
 
         # Print retrieved documents
         # Retrieve documents using the hybrid retriever
@@ -156,8 +191,12 @@ def main() -> None:
         # for i, doc in enumerate(retrieved_docs):
         #     print(f"Document {i + 1}: {doc.page_content}")
 
-        # Invoke the RAG chain
-        answer = rag_chain.invoke(question)
+        # Concatenate all retrieved documents as context
+        context = "\n\n".join(doc.page_content for doc in docs)
+
+        # Use original user_query and all docs as context
+        answer = rag_chain.invoke({"context": context, "question": user_query})
+
         print("\nAnswer:", answer)
 
 
