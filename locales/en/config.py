@@ -106,7 +106,7 @@ conversational_llm_prompt_text = """
     """
 
 help_message = """Available commands:
-/help - Show tips on asking better questions
+/help - Show help message
 /quit - Exit the assistant"""
 
 welcome_message = f"""🚗 Welcome to AI Driving Assistant!
