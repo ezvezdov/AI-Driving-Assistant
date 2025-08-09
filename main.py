@@ -249,6 +249,8 @@ def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
     pdf_country_path = os.path.join(args.pdf_path, args.country)
+
+    # Retrieve available languages
     available_languages = [d for d in os.listdir(pdf_country_path) if os.path.isdir(os.path.join(pdf_country_path, d))]
 
     language = None
