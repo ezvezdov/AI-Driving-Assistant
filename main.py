@@ -29,12 +29,18 @@ torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--embedding_model", default="ufal/robeczech-base", type=str, help="Embedding model (for vector search)")
-parser.add_argument("--rewriter_model", default="gpt-4.1-nano", type=str, help="Rewriter model")
-parser.add_argument("--guardrails_model", default="gpt-4.1-nano", type=str, help="Guardrails model")
-parser.add_argument("--reranker_model", default="cross-encoder/ms-marco-MiniLM-L-6-v2", type=str, help="Reranker model")
-parser.add_argument("--conversational_llm", default="gpt-4o-mini", type=str, help="Conversational LLM")
-parser.add_argument("--db_path", default="vectorstore/db_faiss", type=str, help="Path to save/load FAISS DB")
+parser.add_argument("--embedding_model", default="ufal/robeczech-base",
+                    type=str, help="Embedding model (for vector search)")
+parser.add_argument("--rewriter_model", default="gpt-4.1-nano",
+                    type=str, help="Rewriter model")
+parser.add_argument("--guardrails_model", default="gpt-4.1-nano",
+                    type=str, help="Guardrails model")
+parser.add_argument("--reranker_model",
+                    default="cross-encoder/ms-marco-MiniLM-L-6-v2", type=str, help="Reranker model")
+parser.add_argument("--conversational_llm",
+                    default="gpt-4o-mini", type=str, help="Conversational LLM")
+parser.add_argument("--db_path", default="vectorstore/db_faiss",
+                    type=str, help="Path to save/load FAISS DB")
 
 
 def load_pdf(pdf_path: str) -> List[Document]:
@@ -73,20 +79,20 @@ def split_documents(documents: List[Document],
     splits = text_splitter.split_documents(documents)
     return splits
 
-    
 
 class HybridRetriever():
     def __init__(self, splits: List[Document], save_path: str, embedding_model: str):
 
         # Vector search
-        self.vectorstore = self.create_vector_store(splits, save_path, embedding_model)
+        self.vectorstore = self.create_vector_store(
+            splits, save_path, embedding_model)
 
         # Keyword search
         self.bm25_retriever = BM25Retriever.from_documents(splits)
 
         # Combine searches
         self.hybrid_retriever = self.get_ensambled_retriever()
-        
+
     def invoke(self, user_query: str) -> List[Document]:
         return self.hybrid_retriever.invoke(user_query)
 
@@ -115,40 +121,41 @@ class HybridRetriever():
 
         # Load existing vector store
         else:
-            vectorstore = FAISS.load_local(save_path, embeddings, allow_dangerous_deserialization=True)
+            vectorstore = FAISS.load_local(
+                save_path, embeddings, allow_dangerous_deserialization=True)
         return vectorstore
-    
 
     def get_ensambled_retriever(self) -> EnsembleRetriever:
         faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 4})
         return EnsembleRetriever(
             retrievers=[faiss_retriever, self.bm25_retriever],
             weights=[0.5, 0.5]
-            )
-    
-        
+        )
+
 
 class Conversational_LLM():
     def __init__(self, conversational_llm: str, conversational_llm_prompt_text: str):
-        self.prompt = ChatPromptTemplate.from_template(conversational_llm_prompt_text)
+        self.prompt = ChatPromptTemplate.from_template(
+            conversational_llm_prompt_text)
 
         self.llm = ChatOpenAI(
             model_name=conversational_llm,
             temperature=0.7,
             openai_api_key=OPENAI_API_KEY
         )
-    
+
     def ask_llm(self, question: str, context: str):
-        formatted_prompt = self.prompt.format(question=question, context=context)
+        formatted_prompt = self.prompt.format(
+            question=question, context=context)
         response = self.llm.invoke(formatted_prompt)
         return response.content
-    
+
 
 class Rewriter:
     """Class to handle query rewriting using a language model."""
 
-    def __init__(self, rewriter_llm: str , prompt_text: str):
-        self.llm  = ChatOpenAI(
+    def __init__(self, rewriter_llm: str, prompt_text: str):
+        self.llm = ChatOpenAI(
             model_name=rewriter_llm,
             temperature=0.7,
             openai_api_key=OPENAI_API_KEY
@@ -159,9 +166,11 @@ class Rewriter:
         """Rewrite the user's query into multiple versions."""
         formatted_prompt = self.prompt.format(user_query=user_query)
         response = self.llm.invoke(formatted_prompt)
-        versions = [v.strip() for v in response.content.split("===") if v and not v.startswith("Version")]
+        versions = [v.strip() for v in response.content.split(
+            "===") if v and not v.startswith("Version")]
 
         return versions
+
 
 class Reranker:
     """Class to handle reranking of retrieved documents."""
@@ -184,9 +193,10 @@ class Reranker:
 
         return reranked_docs
 
+
 class Guardrails:
     def __init__(self, guardrails_llm: str, input_prompt_text: str, output_prompt_text: str) -> None:
-        self.llm  = ChatOpenAI(
+        self.llm = ChatOpenAI(
             model_name=guardrails_llm,
             temperature=0.7,
             openai_api_key=OPENAI_API_KEY
@@ -201,6 +211,7 @@ class Guardrails:
             return True
         else:
             return False
+
     def check_output(self, model_output: str) -> bool:
         formatted_prompt = self.output_prompt.format(model_output=model_output)
         response = self.llm.invoke(formatted_prompt)
@@ -210,20 +221,18 @@ class Guardrails:
             return False
 
 
-
 def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
     document = load_pdf(PDF_PATH)
     splits = split_documents(document)
 
-    hybrid_retriever = HybridRetriever(splits, args.db_path, args.embedding_model)
-    
-    # Setup Conversational LLM
-    conversational_llm = Conversational_LLM(args.conversational_llm, conversational_llm_prompt_text)
-    
+    hybrid_retriever = HybridRetriever(
+        splits, args.db_path, args.embedding_model)
 
-    
+    # Setup Conversational LLM
+    conversational_llm = Conversational_LLM(
+        args.conversational_llm, conversational_llm_prompt_text)
 
     # Setup Rewriter LLM and prompt
     rewriter_llm = Rewriter(
@@ -241,7 +250,6 @@ def main(args: argparse.Namespace) -> None:
         output_prompt_text=guardrails_output_prompt_text
     )
 
-
     while True:
         user_query = input("\nAsk a question (or 'quit' to exit): ")
         if user_query.lower() == 'quit':
@@ -252,7 +260,7 @@ def main(args: argparse.Namespace) -> None:
         if not guardrails_check:
             print("Your question was blocked :(")
             continue
-        
+
         # Rewrite the user query into multiple versions
         query_versions = rewriter_llm.rewrite(user_query)
 
@@ -270,13 +278,11 @@ def main(args: argparse.Namespace) -> None:
         # Use original user_query and all docs as context
         answer = conversational_llm.ask_llm(user_query, context)
 
-
         # Output guardrails
         guardrails_check = guardrails.check_output(answer)
         if not guardrails_check:
             print("Sorry, I can't answer this question.")
             continue
-
 
         print("\nAnswer:", answer)
 
