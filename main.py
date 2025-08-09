@@ -267,6 +267,7 @@ def main(args: argparse.Namespace) -> None:
     print(config.welcome_message)
 
     while True:
+        print("-" * shutil.get_terminal_size().columns)
         user_query = input(config.ask_message)
         if user_query.lower() == '/quit':
             break
