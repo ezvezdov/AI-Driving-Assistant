@@ -261,6 +261,11 @@ def main(args: argparse.Namespace) -> None:
         output_prompt_text=config.guardrails_output_prompt_text
     )
 
+    
+
+    # Print welcome message
+    print(config.welcome_message)
+
     while True:
         user_query = input(config.ask_message)
         if user_query.lower() == '/quit':
