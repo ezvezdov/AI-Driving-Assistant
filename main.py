@@ -26,6 +26,7 @@ embeddings_model = "ufal/robeczech-base"  # RobeCzech model
 DB_FAISS_PATH = "vectorstore/db_faiss"  # Path to save/load FAISS DB
 gpt_model = "gpt-4o-mini"
 gpt_rewrtiter = "gpt-4.1-nano"
+gpt_guardrails = "gpt-4.1-nano"
 reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -177,6 +178,33 @@ class Reranker:
         reranked_docs = [doc for doc, score in reranked[:top_n]]
 
         return reranked_docs
+
+class Guardrails:
+    def __init__(self, guardrails_llm: str, input_prompt_text: str, output_prompt_text: str) -> None:
+        self.llm  = ChatOpenAI(
+            model_name=guardrails_llm,
+            temperature=0.7,
+            openai_api_key=OPENAI_API_KEY
+        )
+        self.input_prompt = PromptTemplate.from_template(input_prompt_text)
+        self.output_prompt = PromptTemplate.from_template(output_prompt_text)
+
+    def check_input(self, user_query: str) -> bool:
+        formatted_prompt = self.input_prompt.format(user_query=user_query)
+        response = self.llm.invoke(formatted_prompt)
+        if "no" in response.content.lower():
+            return True
+        else:
+            return False
+    def check_output(self, model_output: str) -> bool:
+        formatted_prompt = self.output_prompt.format(model_output=model_output)
+        response = self.llm.invoke(formatted_prompt)
+        if "no" in response.content.lower():
+            return True
+        else:
+            return False
+
+
 
 def main() -> None:
     """Main function to run the RAG system."""
