@@ -6,8 +6,6 @@ guardrails_model = "gpt-5-nano"
 reranker_model = "cross-encoder/ms-marco-MiniLM-L6-v2"
 conversational_llm = "gpt-5-mini"
 
-db_path = "vectorstore/{country}/{language}/db_faiss".format(language=LANGUAGE, country="{country}")
-pdfs_folder = "pdf/{country}/{language}/".format(language=LANGUAGE, country="{country}")
 
 rewriter_prompt_text = """
 Вы з'яўляецеся экспертом па аптымізацыі запытаў, звязаных з правіламі дарожнага руху. Стварыце **тры розныя перапісаныя версіі** пытання карыстальніка для паляпшэння эфектыўнасці пошуку ў сістэме RAG для юрыдычных дакументаў. Кожная версія павінна падыходзіць да пытання з рознага боку, захоўваючы першапачатковы намер.

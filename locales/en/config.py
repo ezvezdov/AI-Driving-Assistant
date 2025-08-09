@@ -6,9 +6,6 @@ guardrails_model = "gpt-5-nano"
 reranker_model = "cross-encoder/ms-marco-MiniLM-L6-v2"
 conversational_llm = "gpt-5-mini"
 
-db_path = "vectorstore/{country}/{language}/db_faiss".format(language=LANGUAGE, country="{country}")
-pdfs_folder = "pdf/{country}/{language}/".format(language=LANGUAGE, country="{country}")
-
 rewriter_prompt_text = """
 You are a driving regulations query optimization expert. Generate **three distinct rewritten versions** of the user's question to improve retrieval performance in a legal document RAG system. Each version should approach the question from a different angle while preserving the original intent.
 

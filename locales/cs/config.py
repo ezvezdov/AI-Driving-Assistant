@@ -6,9 +6,6 @@ guardrails_model = "gpt-5-nano"
 reranker_model = "cross-encoder/ms-marco-MiniLM-L6-v2"
 conversational_llm = "gpt-5-mini"
 
-db_path = "vectorstore/{country}/{language}/db_faiss".format(language=LANGUAGE, country="{country}")
-pdfs_folder = "pdf/{country}/{language}/".format(language=LANGUAGE, country="{country}")
-
 rewriter_prompt_text = """
 Jste expert na optimalizaci dotazů týkajících se pravidel silničního provozu. Vygenerujte **tři různé přepracované verze** uživatelského dotazu, aby se zlepšil výkon vyhledávání v systému RAG pro právní dokumenty. Každá verze by měla přistupovat k otázce z jiného úhlu, přičemž zachová původní záměr.
 

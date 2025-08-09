@@ -214,8 +214,29 @@ class Guardrails:
 def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
-    document = load_pdf(PDF_PATH)
-    splits = split_documents(document)
+    pdf_country_path = os.path.join(args.pdf_path, args.country)
+    available_languages = [d for d in os.listdir(pdf_country_path) if os.path.isdir(os.path.join(pdf_country_path, d))]
+
+    language = None
+    if len(available_languages) == 1:
+        language = available_languages[0]
+    elif len(available_languages) == 0:
+        print("Sorry, there are not pdfs for this country.")
+    else:
+        available_languages_str = ", ".join(available_languages)
+        
+        while language not in available_languages:
+            language = input(f"Choose the language, [{available_languages_str}]")
+        
+
+    config = importlib.import_module(f"locales.{language}.config")
+    
+    # Set path to folder that contains pdf
+    pdfs_path = os.path.join(args.pdf_path, args.country, language)
+
+    # Set path to vector database
+    db_path = os.path.join(args.db_path, args.country, language, "db_faiss")
+
 
     hybrid_retriever = HybridRetriever(
         splits, args.db_path, args.embedding_model)
