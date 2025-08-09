@@ -29,18 +29,13 @@ torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--embedding_model", default="ufal/robeczech-base",
-                    type=str, help="Embedding model (for vector search)")
-parser.add_argument("--rewriter_model", default="gpt-4.1-nano",
-                    type=str, help="Rewriter model")
-parser.add_argument("--guardrails_model", default="gpt-4.1-nano",
-                    type=str, help="Guardrails model")
-parser.add_argument("--reranker_model",
-                    default="cross-encoder/ms-marco-MiniLM-L-6-v2", type=str, help="Reranker model")
-parser.add_argument("--conversational_llm",
-                    default="gpt-4o-mini", type=str, help="Conversational LLM")
-parser.add_argument("--db_path", default="vectorstore/db_faiss",
-                    type=str, help="Path to save/load FAISS DB")
+parser.add_argument("--embedding_model", default="ufal/robeczech-base", type=str, help="Embedding model (for vector search)")
+parser.add_argument("--rewriter_model", default="gpt-5-nano", type=str, help="Rewriter model")
+parser.add_argument("--guardrails_model", default="gpt-5-nano", type=str, help="Guardrails model")
+parser.add_argument("--reranker_model", default="cross-encoder/ms-marco-MiniLM-L-6-v2", type=str, help="Reranker model")
+parser.add_argument("--conversational_llm", default="gpt-5-mini", type=str, help="Conversational LLM")
+parser.add_argument("--db_path", default="vectorstore/db_faiss", type=str, help="Path to save/load FAISS DB")
+
 
 
 def load_pdf(pdf_path: str) -> List[Document]:
@@ -140,7 +135,6 @@ class Conversational_LLM():
 
         self.llm = ChatOpenAI(
             model_name=conversational_llm,
-            temperature=0.7,
             openai_api_key=OPENAI_API_KEY
         )
 
@@ -157,7 +151,6 @@ class Rewriter:
     def __init__(self, rewriter_llm: str, prompt_text: str):
         self.llm = ChatOpenAI(
             model_name=rewriter_llm,
-            temperature=0.7,
             openai_api_key=OPENAI_API_KEY
         )
         self.prompt = PromptTemplate.from_template(prompt_text)
@@ -198,7 +191,6 @@ class Guardrails:
     def __init__(self, guardrails_llm: str, input_prompt_text: str, output_prompt_text: str) -> None:
         self.llm = ChatOpenAI(
             model_name=guardrails_llm,
-            temperature=0.7,
             openai_api_key=OPENAI_API_KEY
         )
         self.input_prompt = PromptTemplate.from_template(input_prompt_text)
