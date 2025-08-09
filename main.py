@@ -221,7 +221,7 @@ def main() -> None:
         context = "\n\n".join(doc.page_content for doc in reranked_docs)
 
         # Use original user_query and all docs as context
-        answer = rag_chain.invoke({"context": context, "question": user_query})
+        answer = conversational_llm.ask_llm(user_query, context)
 
         print("\nAnswer:", answer)
 
