@@ -275,7 +275,7 @@ def main(args: argparse.Namespace) -> None:
         available_languages_str = ", ".join(available_languages)
         
         while language not in available_languages:
-            language = input(f"Choose the language, [{available_languages_str}]")
+            language = input(f"Please, choose the language [{available_languages_str}] : ")
         
 
     config = importlib.import_module(f"locales.{language}.config")
