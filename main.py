@@ -252,6 +252,15 @@ def main(args: argparse.Namespace) -> None:
     available_languages = [d for d in os.listdir(pdf_country_path) if os.path.isdir(os.path.join(pdf_country_path, d))]
 
     language = None
+
+    # Use provided language (from --language) if it possible
+    if not args.language is None:
+        if args.language in available_languages:
+            language = args.language
+        else:
+            print("Language selected by --language is not available.")
+        
+    
     if len(available_languages) == 1:
         language = available_languages[0]
     elif len(available_languages) == 0:
