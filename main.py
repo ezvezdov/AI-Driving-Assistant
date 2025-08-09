@@ -22,7 +22,7 @@ from _secrets import OPENAI_API_KEY
 
 # Configuration
 PDF_PATH = "examples/pdf/psp.pdf"  # Path to your PDF file
-MODEL_NAME = "ufal/robeczech-base"  # RobeCzech model
+embeddings_model = "ufal/robeczech-base"  # RobeCzech model
 DB_FAISS_PATH = "vectorstore/db_faiss"  # Path to save/load FAISS DB
 gpt_model = "gpt-4o-mini"
 gpt_rewrtiter = "gpt-4.1-nano"
@@ -67,34 +67,60 @@ def split_documents(documents: List[Document],
     splits = text_splitter.split_documents(documents)
     return splits
 
+    
 
-# 2. Create embeddings and vector store
-def create_vector_store(splits: List[Document], save_path: str = DB_FAISS_PATH) -> FAISS:
-    """Create and save vector store from document chunks.
+class HybridRetriever():
+    def __init__(self, splits: List[Document], save_path: str, embeddings_model: str):
 
-    Args:
-        splits: List of document chunks
-        save_path: Path to save the vector store
+        # Vector search
+        self.vectorstore = self.create_vector_store(splits, save_path)
 
-    Returns:
-        FAISS vector store instance
-    """
-    # Initialize embeddings model
-    embeddings = HuggingFaceEmbeddings(
-        model_name=MODEL_NAME,
-        model_kwargs={'device': torch_device},
-        encode_kwargs={'normalize_embeddings': False}
-    )
+        # Keyword search
+        self.bm25_retriever = BM25Retriever.from_documents(splits)
 
-    # Create and save vector store
-    vectorstore = FAISS.from_documents(splits, embeddings)
-    vectorstore.save_local(save_path)
-    return vectorstore
+        # Combine searches
+        self.hybrid_retriever = self.get_ensambled_retriever()
+        
+    def invoke(self, user_query: str) -> List[Document]:
+        return self.hybrid_retriever.invoke(user_query)
 
+    def create_vector_store(self, splits: List[Document], save_path: str = DB_FAISS_PATH) -> FAISS:
+        """Create and save vector store from document chunks.
 
-def create_bm25_retriever(splits: List[Document]) -> BM25Retriever:
-    """Create a BM25 keyword retriever from document splits."""
-    return BM25Retriever.from_documents(splits)
+        Args:
+            splits: List of document chunks
+            save_path: Path to save the vector store
+
+        Returns:
+            FAISS vector store instance
+        """
+
+        # Initialize embeddings model
+        embeddings = HuggingFaceEmbeddings(
+            model_name=embeddings_model,
+            model_kwargs={'device': torch_device},
+            encode_kwargs={'normalize_embeddings': False}
+        )
+
+        # Create and save vector store
+        if not os.path.exists(DB_FAISS_PATH):
+            vectorstore = FAISS.from_documents(splits, embeddings)
+            vectorstore.save_local(save_path)
+
+        # Load existing vector store
+        else:
+            vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+        return vectorstore
+    
+
+    def get_ensambled_retriever(self) -> EnsembleRetriever:
+        faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 4})
+        return EnsembleRetriever(
+            retrievers=[faiss_retriever, self.bm25_retriever],
+            weights=[0.5, 0.5]
+            )
+    
+        
 
 class Conversational_LLM():
     def __init__(self, conversational_llm_prompt_text: str):
@@ -158,28 +184,15 @@ def main() -> None:
     document = load_pdf(PDF_PATH)
     splits = split_documents(document)
 
-    # Check if vector store exists
-    if not os.path.exists(DB_FAISS_PATH):
-        # Create and save vector store
-        vectorstore = create_vector_store(splits)
-    else:
-        # Load existing vector store
-        embeddings = HuggingFaceEmbeddings(model_name=MODEL_NAME)
-        vectorstore = FAISS.load_local(
-            DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-
-    bm25_retriever = create_bm25_retriever(splits)
+    hybrid_retriever = HybridRetriever(splits, DB_FAISS_PATH, embeddings_model)
     
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(conversational_llm_prompt_text)
     
 
-    faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-    hybrid_retriever = EnsembleRetriever(
-        retrievers=[faiss_retriever, bm25_retriever],
-        weights=[0.5, 0.5]
-    )
+    
 
+    # Setup Rewriter LLM and prompt
     rewriter_llm = Rewriter(
         rewriter_llm=gpt_rewrtiter,
         prompt_text=rewriter_prompt_text
