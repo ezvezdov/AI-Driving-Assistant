@@ -35,12 +35,9 @@ parser.add_argument("--rewriter_model", type=str, help="Rewriter model")
 parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
 parser.add_argument("--reranker_model", type=str, help="Reranker model")
 parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
-parser.add_argument("--db_path", default="vectorstore/db_faiss", type=str, help="Path to save/load FAISS DB")
+parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to save/load FAISS DB")
+parser.add_argument("--pdf_path", default="pdf", type=str, help="Path to pdfs")
 
-
-
-def load_pdf(pdf_path: str) -> List[Document]:
-    """Load PDF file and return a list of Document objects.
 
     Args:
         pdf_path: Path to the PDF file
