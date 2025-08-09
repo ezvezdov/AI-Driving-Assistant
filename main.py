@@ -30,6 +30,7 @@ torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str, help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
+parser.add_argument("--language", type=str, help="Language.")
 parser.add_argument("--embedding_model", type=str, help="Embedding model (for vector search)")
 parser.add_argument("--rewriter_model", type=str, help="Rewriter model")
 parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
