@@ -96,37 +96,21 @@ def create_bm25_retriever(splits: List[Document]) -> BM25Retriever:
     """Create a BM25 keyword retriever from document splits."""
     return BM25Retriever.from_documents(splits)
 
+class Conversational_LLM():
+    def __init__(self, conversational_llm_prompt_text: str):
+        self.prompt = ChatPromptTemplate.from_template(conversational_llm_prompt_text)
 
-def setup_rag_chain(vectorstore: VectorStore, bm25_retriever: BM25Retriever) -> Tuple[Runnable, EnsembleRetriever]:
-    """Create RAG chain with hybrid retriever and LLM."""
-    llm = ChatOpenAI(
-        model_name=gpt_model,
-        temperature=0.7,
-        openai_api_key=OPENAI_API_KEY
-    )
-
-    template = """Answer the question based only on the following context:
-    {context}
+        self.llm = ChatOpenAI(
+            model_name=gpt_model,
+            temperature=0.7,
+            openai_api_key=OPENAI_API_KEY
+        )
     
-    Question: {question}
-    """
-    prompt = ChatPromptTemplate.from_template(template)
-
-    # Hybrid retriever: combine vector and keyword retrievers
-    faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-    hybrid_retriever = EnsembleRetriever(
-        retrievers=[faiss_retriever, bm25_retriever],
-        weights=[0.5, 0.5]
-    )
-
-    rag_chain = (
-        # {"context": hybrid_retriever, "question": RunnablePassthrough()}
-        prompt
-        | llm
-        | StrOutputParser()
-    )
-
-    return rag_chain, hybrid_retriever
+    def ask_llm(self, question: str, context: str):
+        formatted_prompt = self.prompt.format(question=question, context=context)
+        response = self.llm.invoke(formatted_prompt)
+        return response.content
+    
 
 class Rewriter:
     """Class to handle query rewriting using a language model."""
@@ -185,9 +169,17 @@ def main() -> None:
             DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
 
     bm25_retriever = create_bm25_retriever(splits)
-    rag_chain, hybrid_retriever = setup_rag_chain(vectorstore, bm25_retriever)
+    
+    # Setup Conversational LLM
+    conversational_llm = Conversational_LLM(conversational_llm_prompt_text)
+    
 
-    # Setup rewriter LLM and prompt
+    faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    hybrid_retriever = EnsembleRetriever(
+        retrievers=[faiss_retriever, bm25_retriever],
+        weights=[0.5, 0.5]
+    )
+
     rewriter_llm = Rewriter(
         rewriter_llm=gpt_rewrtiter,
         prompt_text=rewriter_prompt_text
