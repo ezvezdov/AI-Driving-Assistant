@@ -24,9 +24,6 @@ import warnings
 import shutil
 from _secrets import OPENAI_API_KEY
 
-# Configuration
-PDF_PATH = "examples/pdf/psp.pdf"  # Path to your PDF file
-
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
