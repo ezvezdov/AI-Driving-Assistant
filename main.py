@@ -17,7 +17,7 @@ from sentence_transformers import CrossEncoder
 
 import torch
 
-from prompts.en import rewriter_prompt_text
+from prompts.en import rewriter_prompt_text, guardrails_input_prompt_text, guardrails_output_prompt_text, conversational_llm_prompt_text
 from _secrets import OPENAI_API_KEY
 
 # Configuration
