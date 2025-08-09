@@ -22,6 +22,10 @@ import os
 
 import warnings
 import shutil
+
+# Suppress FutureWarnings globally
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 from _secrets import OPENAI_API_KEY
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
