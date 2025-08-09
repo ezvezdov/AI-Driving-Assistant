@@ -29,11 +29,12 @@ torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--embedding_model", default="ufal/robeczech-base", type=str, help="Embedding model (for vector search)")
-parser.add_argument("--rewriter_model", default="gpt-5-nano", type=str, help="Rewriter model")
-parser.add_argument("--guardrails_model", default="gpt-5-nano", type=str, help="Guardrails model")
-parser.add_argument("--reranker_model", default="cross-encoder/ms-marco-MiniLM-L-6-v2", type=str, help="Reranker model")
-parser.add_argument("--conversational_llm", default="gpt-5-mini", type=str, help="Conversational LLM")
+parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str, help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
+parser.add_argument("--embedding_model", type=str, help="Embedding model (for vector search)")
+parser.add_argument("--rewriter_model", type=str, help="Rewriter model")
+parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
+parser.add_argument("--reranker_model", type=str, help="Reranker model")
+parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
 parser.add_argument("--db_path", default="vectorstore/db_faiss", type=str, help="Path to save/load FAISS DB")
 
 
