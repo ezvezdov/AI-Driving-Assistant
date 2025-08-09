@@ -229,10 +229,24 @@ def main() -> None:
     # Setup reranker
     reranker = Reranker(reranker_model)
 
+    # Setup Guardrails
+    guardrails = Guardrails(
+        guardrails_llm=gpt_guardrails,
+        input_prompt_text=guardrails_input_prompt_text,
+        output_prompt_text=guardrails_output_prompt_text
+    )
+
+
     while True:
         user_query = input("\nAsk a question (or 'quit' to exit): ")
         if user_query.lower() == 'quit':
             break
+
+        # Check input
+        guardrails_check = guardrails.check_input(user_query)
+        if not guardrails_check:
+            print("Your question was blocked :(")
+            continue
         
         # Rewrite the user query into multiple versions
         query_versions = rewriter_llm.rewrite(user_query)
@@ -250,6 +264,14 @@ def main() -> None:
 
         # Use original user_query and all docs as context
         answer = conversational_llm.ask_llm(user_query, context)
+
+
+        # Output guardrails
+        guardrails_check = guardrails.check_output(answer)
+        if not guardrails_check:
+            print("Sorry, I can't answer this question.")
+            continue
+
 
         print("\nAnswer:", answer)
 
