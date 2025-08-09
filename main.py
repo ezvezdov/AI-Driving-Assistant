@@ -39,38 +39,69 @@ parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to 
 parser.add_argument("--pdf_path", default="pdf", type=str, help="Path to pdfs")
 
 
-    Args:
-        pdf_path: Path to the PDF file
 
-    Returns:
-        List of Document objects
-    """
-    loader = PyPDFLoader(pdf_path)
-    documents = loader.load()
-    return documents
+class ProcessorPDF():
+    def __init__(self, folder_path: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> None:
+        self.folder_path = folder_path
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            length_function=len,
+            is_separator_regex=False,
+        )
+
+        self.documents = self.reload_documents()
 
 
-def split_documents(documents: List[Document],
-                    chunk_size: int = 1000,
-                    chunk_overlap: int = 200) -> List[Document]:
-    """Split documents into smaller chunks.
+    def reload_documents(self) -> List[Document]:
+        pdf_files_paths = self.get_pdf_paths()
 
-    Args:
-        documents: List of Document objects
-        chunk_size: Size of each chunk
-        chunk_overlap: Overlap between chunks
+        documents = []
+        for pdf_path in pdf_files_paths:
+            documents.extend(self.load_pdf(pdf_path))
+        
+        return documents
 
-    Returns:
-        List of split Document objects
-    """
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        length_function=len,
-        is_separator_regex=False,
-    )
-    splits = text_splitter.split_documents(documents)
-    return splits
+    def get_pdf_paths(self) -> List[str]:
+        # Check if the folder exists
+        if not os.path.exists(self.folder_path):
+            raise FileNotFoundError(f"The folder {self.folder_path} does not exist.")
+        
+        pdf_files = []
+
+        # Walk through the directory and add PDF files to the list
+        for root, _, files in os.walk(self.folder_path):
+            for file in files:
+                if file.lower().endswith('.pdf'):  # Ensures the file is a PDF
+                    pdf_files.append(os.path.join(root, file))
+
+        return pdf_files
+
+
+    def load_pdf(self, pdf_path: str) -> List[Document]:
+        """Load PDF file and return a list of Document objects.
+
+        Args:
+            pdf_path: Path to the PDF file
+
+        Returns:
+            List of Document objects
+        """
+        loader = PyPDFLoader(pdf_path)
+        documents = loader.load()
+        return documents
+
+    def split_documents(self) -> List[Document]:
+        """
+        Split documents into smaller chunks.
+
+        Returns:
+            List of split Document objects
+        """
+
+        splits = self.text_splitter.split_documents(self.documents)
+
+        return splits
 
 
 class HybridRetriever():
@@ -253,6 +284,9 @@ def main(args: argparse.Namespace) -> None:
     # Set path to vector database
     db_path = os.path.join(args.db_path, args.country, language, "db_faiss")
 
+
+    proceesor_pdf = ProcessorPDF(pdfs_path)
+    splits = proceesor_pdf.split_documents()
 
     hybrid_retriever = HybridRetriever(
         splits, db_path, config.embedding_model)
