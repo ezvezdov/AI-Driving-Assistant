@@ -239,31 +239,31 @@ def main(args: argparse.Namespace) -> None:
 
 
     hybrid_retriever = HybridRetriever(
-        splits, args.db_path, args.embedding_model)
+        splits, db_path, config.embedding_model)
 
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(
-        args.conversational_llm, conversational_llm_prompt_text)
+        config.conversational_llm, config.conversational_llm_prompt_text)
 
     # Setup Rewriter LLM and prompt
     rewriter_llm = Rewriter(
-        rewriter_llm=args.rewriter_model,
-        prompt_text=rewriter_prompt_text
+        rewriter_llm=config.rewriter_model,
+        prompt_text=config.rewriter_prompt_text
     )
 
     # Setup Reranker
-    reranker = Reranker(args.reranker_model)
+    reranker = Reranker(config.reranker_model)
 
     # Setup Guardrails
     guardrails = Guardrails(
-        guardrails_llm=args.guardrails_model,
-        input_prompt_text=guardrails_input_prompt_text,
-        output_prompt_text=guardrails_output_prompt_text
+        guardrails_llm=config.guardrails_model,
+        input_prompt_text=config.guardrails_input_prompt_text,
+        output_prompt_text=config.guardrails_output_prompt_text
     )
 
     while True:
-        user_query = input("\nAsk a question (or 'quit' to exit): ")
-        if user_query.lower() == 'quit':
+        user_query = input(config.ask_message)
+        if user_query.lower() == '/quit':
             break
 
         # Check input
