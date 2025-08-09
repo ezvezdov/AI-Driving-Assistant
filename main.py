@@ -16,20 +16,25 @@ from langchain_community.retrievers import BM25Retriever
 from sentence_transformers import CrossEncoder
 
 import torch
+import argparse
 
 from prompts.en import rewriter_prompt_text, guardrails_input_prompt_text, guardrails_output_prompt_text, conversational_llm_prompt_text
 from _secrets import OPENAI_API_KEY
 
 # Configuration
 PDF_PATH = "examples/pdf/psp.pdf"  # Path to your PDF file
-embeddings_model = "ufal/robeczech-base"  # RobeCzech model
-DB_FAISS_PATH = "vectorstore/db_faiss"  # Path to save/load FAISS DB
-gpt_model = "gpt-4o-mini"
-gpt_rewrtiter = "gpt-4.1-nano"
-gpt_guardrails = "gpt-4.1-nano"
-reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--embedding_model", default="ufal/robeczech-base", type=str, help="Embedding model (for vector search)")
+parser.add_argument("--rewriter_model", default="gpt-4.1-nano", type=str, help="Rewriter model")
+parser.add_argument("--guardrails_model", default="gpt-4.1-nano", type=str, help="Guardrails model")
+parser.add_argument("--reranker_model", default="cross-encoder/ms-marco-MiniLM-L-6-v2", type=str, help="Reranker model")
+parser.add_argument("--conversational_llm", default="gpt-4o-mini", type=str, help="Conversational LLM")
+parser.add_argument("--db_path", default="vectorstore/db_faiss", type=str, help="Path to save/load FAISS DB")
 
 
 def load_pdf(pdf_path: str) -> List[Document]:
@@ -206,32 +211,32 @@ class Guardrails:
 
 
 
-def main() -> None:
+def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
     document = load_pdf(PDF_PATH)
     splits = split_documents(document)
 
-    hybrid_retriever = HybridRetriever(splits, DB_FAISS_PATH, embeddings_model)
+    hybrid_retriever = HybridRetriever(splits, args.db_path, args.embedding_model)
     
     # Setup Conversational LLM
-    conversational_llm = Conversational_LLM(conversational_llm_prompt_text)
+    conversational_llm = Conversational_LLM(args.conversational_llm, conversational_llm_prompt_text)
     
 
     
 
     # Setup Rewriter LLM and prompt
     rewriter_llm = Rewriter(
-        rewriter_llm=gpt_rewrtiter,
+        rewriter_llm=args.rewriter_model,
         prompt_text=rewriter_prompt_text
     )
 
-    # Setup reranker
-    reranker = Reranker(reranker_model)
+    # Setup Reranker
+    reranker = Reranker(args.reranker_model)
 
     # Setup Guardrails
     guardrails = Guardrails(
-        guardrails_llm=gpt_guardrails,
+        guardrails_llm=args.guardrails_model,
         input_prompt_text=guardrails_input_prompt_text,
         output_prompt_text=guardrails_output_prompt_text
     )
@@ -277,4 +282,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_args = parser.parse_args([] if "__file__" not in globals() else None)
+
+    main(main_args)
