@@ -26,6 +26,8 @@ from _secrets import OPENAI_API_KEY
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
+DEBUG = True
+
 
 parser = argparse.ArgumentParser()
 
