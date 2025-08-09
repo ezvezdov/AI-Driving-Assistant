@@ -265,6 +265,10 @@ def main(args: argparse.Namespace) -> None:
         user_query = input(config.ask_message)
         if user_query.lower() == '/quit':
             break
+        if user_query.lower() == '/help':
+            print(config.help_message)
+            continue
+
 
         # Check input
         guardrails_check = guardrails.check_input(user_query)
