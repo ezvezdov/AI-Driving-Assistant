@@ -76,10 +76,10 @@ def split_documents(documents: List[Document],
     
 
 class HybridRetriever():
-    def __init__(self, splits: List[Document], save_path: str, embeddings_model: str):
+    def __init__(self, splits: List[Document], save_path: str, embedding_model: str):
 
         # Vector search
-        self.vectorstore = self.create_vector_store(splits, save_path)
+        self.vectorstore = self.create_vector_store(splits, save_path, embedding_model)
 
         # Keyword search
         self.bm25_retriever = BM25Retriever.from_documents(splits)
@@ -90,7 +90,7 @@ class HybridRetriever():
     def invoke(self, user_query: str) -> List[Document]:
         return self.hybrid_retriever.invoke(user_query)
 
-    def create_vector_store(self, splits: List[Document], save_path: str = DB_FAISS_PATH) -> FAISS:
+    def create_vector_store(self, splits: List[Document], save_path: str, embedding_model: str) -> FAISS:
         """Create and save vector store from document chunks.
 
         Args:
@@ -103,19 +103,19 @@ class HybridRetriever():
 
         # Initialize embeddings model
         embeddings = HuggingFaceEmbeddings(
-            model_name=embeddings_model,
+            model_name=embedding_model,
             model_kwargs={'device': torch_device},
             encode_kwargs={'normalize_embeddings': False}
         )
 
         # Create and save vector store
-        if not os.path.exists(DB_FAISS_PATH):
+        if not os.path.exists(save_path):
             vectorstore = FAISS.from_documents(splits, embeddings)
             vectorstore.save_local(save_path)
 
         # Load existing vector store
         else:
-            vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+            vectorstore = FAISS.load_local(save_path, embeddings, allow_dangerous_deserialization=True)
         return vectorstore
     
 
@@ -129,11 +129,11 @@ class HybridRetriever():
         
 
 class Conversational_LLM():
-    def __init__(self, conversational_llm_prompt_text: str):
+    def __init__(self, conversational_llm: str, conversational_llm_prompt_text: str):
         self.prompt = ChatPromptTemplate.from_template(conversational_llm_prompt_text)
 
         self.llm = ChatOpenAI(
-            model_name=gpt_model,
+            model_name=conversational_llm,
             temperature=0.7,
             openai_api_key=OPENAI_API_KEY
         )
