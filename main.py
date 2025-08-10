@@ -255,6 +255,7 @@ def main(args: argparse.Namespace) -> None:
 
     # Retrieve available languages
     available_languages = [d for d in os.listdir(pdf_country_path) if os.path.isdir(os.path.join(pdf_country_path, d))]
+    available_languages_str = ", ".join(available_languages)
 
     language = None
 
@@ -271,7 +272,7 @@ def main(args: argparse.Namespace) -> None:
     elif len(available_languages) == 0:
         print("Sorry, there are not pdfs for this country.")
     else:
-        available_languages_str = ", ".join(available_languages)
+        
         
         while language not in available_languages:
             language = input(f"Please, choose the language [{available_languages_str}] : ")
