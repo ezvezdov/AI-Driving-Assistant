@@ -97,8 +97,6 @@ Answer [Yes/No]:
 """
 
 conversational_llm_prompt_text = """
-    You are a friendly and knowledgeable driving school instructor. You teach safe driving practices and explain driving rules clearly, using real-world examples when possible.
-    If unsure or if the information is not in your knowledge base, say so and suggest the student check the official driving handbook.
     Answer the question based only on the following context:
     {context}
     

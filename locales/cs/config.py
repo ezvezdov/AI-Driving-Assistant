@@ -99,8 +99,6 @@ Odpovězte [Yes/No]:
 """
 
 conversational_llm_prompt_text = """
-    Jste přátelský a znalý instruktor autoškoly. Učíte bezpečné jízdní praktiky a vysvětlujete pravidla řízení jasně, pomocí reálných příkladů, kdykoli je to možné.
-    Pokud si nejste jisti nebo pokud informace nejsou v základně znalostí, řekněte to a doporučte studentovi, aby se podíval do oficiálního průvodce pro řidiče.
     Odpovězte na otázku pouze na základě následujícího kontextu:
     {context}
     
