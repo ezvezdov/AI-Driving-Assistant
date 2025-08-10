@@ -41,7 +41,7 @@ parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
 parser.add_argument("--reranker_model", type=str, help="Reranker model")
 parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
 parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to save/load FAISS DB")
-parser.add_argument("--pdf_path", default="pdf", type=str, help="Path to pdfs")
+parser.add_argument("--documents_path", default="documents", type=str, help="Path to documents")
 
 
 
@@ -270,10 +270,10 @@ class Guardrails:
 def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
-    pdf_country_path = os.path.join(args.pdf_path, args.country)
+    documents_country_path = os.path.join(args.documents_path, args.country)
 
     # Retrieve available languages
-    available_languages = [d for d in os.listdir(pdf_country_path) if os.path.isdir(os.path.join(pdf_country_path, d))]
+    available_languages = [d for d in os.listdir(documents_country_path) if os.path.isdir(os.path.join(documents_country_path, d))]
     available_languages_str = ", ".join(available_languages)
 
     language = None
@@ -289,7 +289,7 @@ def main(args: argparse.Namespace) -> None:
     if len(available_languages) == 1:
         language = available_languages[0]
     elif len(available_languages) == 0:
-        print("Sorry, there are not pdfs for this country.")
+        print("Sorry, there are not documents for this country.")
     else:
         
         
@@ -310,8 +310,8 @@ def main(args: argparse.Namespace) -> None:
     if args.conversational_llm:
         config.conversational_llm = args.conversational_llm
     
-    # Set path to folder that contains pdf
-    pdfs_path = os.path.join(args.pdf_path, args.country, language)
+    # Set path to folder that contains documents
+    documents_path = os.path.join(args.documents_path, args.country, language)
 
     # Set path to vector database
     embedding_model_path = config.embedding_model.split("/")
@@ -319,7 +319,7 @@ def main(args: argparse.Namespace) -> None:
 
 
     # Setup HybridRetriever
-    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, pdfs_path)
+    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path)
 
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(
