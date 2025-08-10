@@ -124,3 +124,7 @@ ask_message = "❓ Задайце сваё пытанне: "
 question_block_message = "Вашае пытанне было заблакавана 😢"
 
 conversational_llm_output_block_message = "Прабачце, але я не магу даць бяспечны і дакладны адказ на гэтае пытанне."
+
+start_document_rescan_message = "📄 Перасканаванне дакументаў і перазагрузка пошукавіка ..."
+
+end_document_rescan_message = "📄 Дакументы былі паспяхова перасканаваныя!"

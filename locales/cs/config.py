@@ -122,3 +122,7 @@ ask_message = "❓ Zadejte svou otázku: "
 question_block_message = "Vaše otázka byla zablokována 😢"
 
 conversational_llm_output_block_message = "Omlouvám se, ale na tuto otázku nemohu poskytnout bezpečnou a přesnou odpověď."
+
+start_document_rescan_message = "📄 Přeskenuji dokumenty a znovu načítám vyhledávač ..."
+
+end_document_rescan_message = "📄 Dokumenty byly úspěšně přeskenovány!"

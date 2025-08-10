@@ -120,3 +120,7 @@ ask_message = "❓ Ask your question: "
 question_block_message = "Your question was blocked 😢"
 
 conversational_llm_output_block_message = "Sorry, I can't provide a safe and accurate answer to that question."
+
+start_document_rescan_message = "📄 Rescanning documents and reloading retriever ..."
+
+end_document_rescan_message = "📄 Documents were rescaned successfully!"
