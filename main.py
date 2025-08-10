@@ -295,7 +295,8 @@ def main(args: argparse.Namespace) -> None:
     pdfs_path = os.path.join(args.pdf_path, args.country, language)
 
     # Set path to vector database
-    db_path = os.path.join(args.db_path, args.country, language, "db_faiss")
+    embedding_model_path = config.embedding_model.split("/")
+    db_path = os.path.join(args.db_path, args.country, language, *embedding_model_path, "db_faiss")
 
 
     proceesor_pdf = ProcessorPDF(pdfs_path)
