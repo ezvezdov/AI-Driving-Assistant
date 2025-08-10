@@ -367,6 +367,7 @@ def main(args: argparse.Namespace) -> None:
         guardrails_check = guardrails.check_output(answer)
         if not guardrails_check:
             print("Sorry, I can't answer this question.")
+            continue
 
         print("\nAnswer:", answer)
 
