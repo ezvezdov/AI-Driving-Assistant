@@ -366,7 +366,7 @@ def main(args: argparse.Namespace) -> None:
         # Output guardrails
         guardrails_check = guardrails.check_output(answer)
         if not guardrails_check:
-            print("Sorry, I can't answer this question.")
+            print(config.conversational_llm_output_block_message)
             continue
 
         print("\nAnswer:", answer)

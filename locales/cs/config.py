@@ -120,3 +120,5 @@ Zeptejte se na cokoli a já se pokusím získat co nejpřesnější informace.
 ask_message = "❓ Zadejte svou otázku: "
 
 question_block_message = "Vaše otázka byla zablokována 😢"
+
+conversational_llm_output_block_message = "Omlouvám se, ale na tuto otázku nemohu poskytnout bezpečnou a přesnou odpověď."

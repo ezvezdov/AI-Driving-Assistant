@@ -122,3 +122,5 @@ welcome_message = f"""🚗 Сардэчна запрашаем у AI Памоч�
 ask_message = "❓ Задайце сваё пытанне: "
 
 question_block_message = "Вашае пытанне было заблакавана 😢"
+
+conversational_llm_output_block_message = "Прабачце, але я не магу даць бяспечны і дакладны адказ на гэтае пытанне."
