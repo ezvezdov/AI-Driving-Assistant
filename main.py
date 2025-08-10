@@ -30,8 +30,6 @@ from _secrets import OPENAI_API_KEY
 
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
-DEBUG = True
-
 
 parser = argparse.ArgumentParser()
 
@@ -283,19 +281,14 @@ def main(args: argparse.Namespace) -> None:
     
     if args.embedding_model:
         config.embedding_model = args.embedding_model
-        if DEBUG: print(f"INFO: Use {config.embedding_model} as embedding model (overwrite defaults).")
     if args.rewriter_model:
         config.rewriter_model = args.rewriter_model
-        if DEBUG: print(f"INFO: Use {config.rewriter_model} as rewriter model (overwrite defaults).")
     if args.guardrails_model:
         config.guardrails_model = args.guardrails_model
-        if DEBUG: print(f"INFO: Use {config.guardrails_model} as guardrails model (overwrite defaults).")
     if args.reranker_model:
         config.reranker_model = args.reranker_model
-        if DEBUG: print(f"INFO: Use {config.reranker_model} as reranker model (overwrite defaults).")
     if args.conversational_llm:
         config.conversational_llm = args.conversational_llm
-        if DEBUG: print(f"INFO: Use {config.conversational_llm} as conversational LLM (overwrite defaults).")
     
     # Set path to folder that contains pdf
     pdfs_path = os.path.join(args.pdf_path, args.country, language)
