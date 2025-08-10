@@ -3,7 +3,7 @@ LANGUAGE = "cs"
 embedding_model = "ufal/robeczech-base"
 rewriter_model = "gpt-5-nano"
 guardrails_model = "gpt-5-nano"
-reranker_model = "cross-encoder/ms-marco-MiniLM-L6-v2"
+reranker_model = "BAAI/bge-reranker-v2-m3"
 conversational_llm = "gpt-5-mini"
 
 rewriter_prompt_text = """
