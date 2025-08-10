@@ -110,11 +110,38 @@ class ProcessorPDF():
 
 
 class HybridRetriever():
-    def __init__(self, splits: List[Document], save_path: str, embedding_model: str):
+    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str):
+
+        # Set vectorstore path
+        self.vectorstore_path = vectorstore_path
+
+        # Set documents path
+        self.documents_path = documents_path
+
+        # Initialize embeddings model
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name=embedding_model,
+            model_kwargs={'device': torch_device},
+            encode_kwargs={'normalize_embeddings': False}
+        )
+
+        self.reload_retriever(use_exising_vectorstore=True)
+        
+
+    def invoke(self, user_query: str) -> List[Document]:
+        return self.hybrid_retriever.invoke(user_query)
+
+
+    def reload_retriever(self, use_exising_vectorstore=False) -> None:
+
+        # PDF processor
+        proceesor_pdf = ProcessorPDF(self.documents_path)
+
+        # Split documents
+        splits = proceesor_pdf.split_documents()
 
         # Vector search
-        self.vectorstore = self.create_vector_store(
-            splits, save_path, embedding_model)
+        self.vectorstore = self.create_vector_store(splits, use_exising_vectorstore)
 
         # Keyword search
         self.bm25_retriever = BM25Retriever.from_documents(splits)
@@ -122,10 +149,9 @@ class HybridRetriever():
         # Combine searches
         self.hybrid_retriever = self.get_ensambled_retriever()
 
-    def invoke(self, user_query: str) -> List[Document]:
-        return self.hybrid_retriever.invoke(user_query)
 
-    def create_vector_store(self, splits: List[Document], save_path: str, embedding_model: str) -> FAISS:
+
+    def create_vector_store(self, splits: List[Document], use_exising_vectorstore: bool) -> FAISS:
         """Create and save vector store from document chunks.
 
         Args:
@@ -136,26 +162,19 @@ class HybridRetriever():
             FAISS vector store instance
         """
 
-        # Initialize embeddings model
-        embeddings = HuggingFaceEmbeddings(
-            model_name=embedding_model,
-            model_kwargs={'device': torch_device},
-            encode_kwargs={'normalize_embeddings': False}
-        )
-
         # Create and save vector store
-        if not os.path.exists(save_path):
-            vectorstore = FAISS.from_documents(splits, embeddings)
-            vectorstore.save_local(save_path)
+        if not os.path.exists(self.vectorstore_path) or not use_exising_vectorstore:
+            vectorstore = FAISS.from_documents(splits, self.embeddings)
+            vectorstore.save_local(self.vectorstore_path)
 
         # Load existing vector store
         else:
             vectorstore = FAISS.load_local(
-                save_path, embeddings, allow_dangerous_deserialization=True)
+                self.vectorstore_path, self.embeddings, allow_dangerous_deserialization=True)
         return vectorstore
 
     def get_ensambled_retriever(self) -> EnsembleRetriever:
-        faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 4})
+        faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 6})
         return EnsembleRetriever(
             retrievers=[faiss_retriever, self.bm25_retriever],
             weights=[0.5, 0.5]
@@ -299,11 +318,8 @@ def main(args: argparse.Namespace) -> None:
     db_path = os.path.join(args.db_path, args.country, language, *embedding_model_path, "db_faiss")
 
 
-    proceesor_pdf = ProcessorPDF(pdfs_path)
-    splits = proceesor_pdf.split_documents()
-
-    hybrid_retriever = HybridRetriever(
-        splits, db_path, config.embedding_model)
+    # Setup HybridRetriever
+    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, pdfs_path)
 
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(
