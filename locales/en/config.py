@@ -116,3 +116,5 @@ Ask any question, and I'll fetch the most accurate info I can.
 {help_message}"""
 
 ask_message = "❓ Ask your question: "
+
+question_block_message = "Your question was blocked 😢"

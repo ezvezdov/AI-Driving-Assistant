@@ -348,7 +348,7 @@ def main(args: argparse.Namespace) -> None:
         # Check input
         guardrails_check = guardrails.check_input(user_query)
         if not guardrails_check:
-            print("Your question was blocked :(")
+            print(config.question_block_message)
             continue
 
         # Rewrite the user query into multiple versions

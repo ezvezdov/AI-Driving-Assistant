@@ -118,3 +118,5 @@ Zeptejte se na cokoli a já se pokusím získat co nejpřesnější informace.
 {help_message}"""
 
 ask_message = "❓ Zadejte svou otázku: "
+
+question_block_message = "Vaše otázka byla zablokována 😢"

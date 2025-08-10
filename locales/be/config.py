@@ -120,3 +120,5 @@ welcome_message = f"""🚗 Сардэчна запрашаем у AI Памоч�
 {help_message}"""
 
 ask_message = "❓ Задайце сваё пытанне: "
+
+question_block_message = "Вашае пытанне было заблакавана 😢"
