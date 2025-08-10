@@ -264,7 +264,7 @@ def main(args: argparse.Namespace) -> None:
         if args.language in available_languages:
             language = args.language
         else:
-            print("Language selected by --language is not available.")
+            print("Language selected by --language is not available for this country.\nAvailable languages: ", available_languages_str)
         
     
     if len(available_languages) == 1:
