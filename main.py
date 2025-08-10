@@ -351,9 +351,15 @@ def main(args: argparse.Namespace) -> None:
         user_query = input(config.ask_message)
         if user_query.lower() == '/quit':
             break
-        if user_query.lower() == '/help':
+        elif user_query.lower() == '/help':
             print(config.help_message)
             continue
+        elif user_query.lower() == '/reload':
+            print(config.start_document_rescan_message)
+            hybrid_retriever.reload_retriever()
+            print(config.end_document_rescan_message)
+            continue
+
 
 
         # Check input
