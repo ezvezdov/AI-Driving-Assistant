@@ -153,7 +153,7 @@ class HybridRetriever():
         self.bm25_retriever = BM25Retriever.from_documents(splits)
 
         # Combine searches
-        self.hybrid_retriever = self.get_ensambled_retriever()
+        self.hybrid_retriever = self.get_ensembled_retriever()
 
 
 
@@ -179,7 +179,7 @@ class HybridRetriever():
                 self.vectorstore_path, self.embeddings, allow_dangerous_deserialization=True)
         return vectorstore
 
-    def get_ensambled_retriever(self) -> EnsembleRetriever:
+    def get_ensembled_retriever(self) -> EnsembleRetriever:
         faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": self.top_k})
         return EnsembleRetriever(
             retrievers=[faiss_retriever, self.bm25_retriever],
@@ -187,7 +187,7 @@ class HybridRetriever():
         )
 
 
-class Conversational_LLM():
+class ConversationalLLM():
     def __init__(self, conversational_llm: str, conversational_llm_prompt_text: str):
         self.prompt = ChatPromptTemplate.from_template(
             conversational_llm_prompt_text)
@@ -329,7 +329,7 @@ def main(args: argparse.Namespace) -> None:
     hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate, args.top_k, args.chunk_size, args.chunk_overlap)
 
     # Setup Conversational LLM
-    conversational_llm = Conversational_LLM(
+    conversational_llm = ConversationalLLM(
         config.conversational_llm, config.conversational_llm_prompt_text)
 
     # Setup Rewriter LLM and prompt
