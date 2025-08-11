@@ -25,12 +25,15 @@ from sentence_transformers import CrossEncoder
 warnings.simplefilter(action='ignore', category=FutureWarning)
 logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
 
+# OpenAI key taken from env
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # Set torch device
 TORCH_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-
+# -----------------------
+# CLI ARGUMENTS
+# -----------------------
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str, help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
@@ -355,10 +358,13 @@ def main(args: argparse.Namespace) -> None:
         output_prompt_text=config.guardrails_output_prompt_text
     )
 
-    
+    # RAG main loop
     while True:
+        # Get user query
         print("-" * shutil.get_terminal_size().columns)
         user_query = input(config.ask_message)
+
+        # Check for special commands
         if user_query.lower() == '/quit':
             break
         elif user_query.lower() == '/help':
@@ -400,7 +406,8 @@ def main(args: argparse.Namespace) -> None:
         if not guardrails_check:
             print(config.conversational_llm_output_block_message)
             continue
-
+        
+        # Print the answer
         print("\n" + config.answer_message, answer)
 
 
