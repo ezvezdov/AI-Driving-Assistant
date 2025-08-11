@@ -1,4 +1,6 @@
-# RAG
+# 🤖🚗 AI Driving Assistant
+A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific driving regulation questions using provided documents as the knowledge source.
+
 
 ## Installation
 ```bash
