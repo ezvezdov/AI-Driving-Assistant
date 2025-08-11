@@ -4,6 +4,7 @@ import logging
 import argparse
 import warnings
 import importlib
+from pathlib import Path
 
 import torch
 from typing import List, Tuple, Any, Optional
@@ -49,7 +50,7 @@ parser.add_argument("--chunk_overlap", default=200, type=int, help="Overlap size
 
 
 class ProcessorPDF():
-    def __init__(self, folder_path: str, chunk_size: int, chunk_overlap: int) -> None:
+    def __init__(self, folder_path: Path, chunk_size: int, chunk_overlap: int) -> None:
         self.folder_path = folder_path
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
@@ -72,21 +73,20 @@ class ProcessorPDF():
 
     def get_pdf_paths(self) -> List[str]:
         # Check if the folder exists
-        if not os.path.exists(self.folder_path):
+        if not self.folder_path.exists():
             raise FileNotFoundError(f"The folder {self.folder_path} does not exist.")
         
         pdf_files = []
 
         # Walk through the directory and add PDF files to the list
-        for root, _, files in os.walk(self.folder_path):
-            for file in files:
-                if file.lower().endswith('.pdf'):  # Ensures the file is a PDF
-                    pdf_files.append(os.path.join(root, file))
+        for pdf_path in Path(self.folder_path).rglob("*.pdf"):
+            if pdf_path.suffix.lower() == ".pdf":
+                pdf_files.append(pdf_path)
 
         return pdf_files
 
 
-    def load_pdf(self, pdf_path: str) -> List[Document]:
+    def load_pdf(self, pdf_path: Path) -> List[Document]:
         """Load PDF file and return a list of Document objects.
 
         Args:
@@ -113,7 +113,7 @@ class ProcessorPDF():
 
 
 class HybridRetriever():
-    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str, vectorstore_recreate: bool, top_k: int, chunk_size: int, chunk_overlap: int) -> None:
+    def __init__(self, vectorstore_path: Path, embedding_model: str, documents_path: Path, vectorstore_recreate: bool, top_k: int, chunk_size: int, chunk_overlap: int) -> None:
 
         # Set vectorstore path
         self.vectorstore_path = vectorstore_path
@@ -171,7 +171,7 @@ class HybridRetriever():
         """
 
         # Create and save vector store
-        if not os.path.exists(self.vectorstore_path) or vectorstore_recreate:
+        if not self.vectorstore_path.exists() or vectorstore_recreate:
             vectorstore = FAISS.from_documents(splits, self.embeddings)
             vectorstore.save_local(self.vectorstore_path)
 
@@ -279,10 +279,10 @@ class Guardrails:
 def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
-    documents_country_path = os.path.join(args.documents_path, args.country)
+    documents_country_path = Path(args.documents_path) / args.country
 
     # Retrieve available languages
-    available_languages = [d for d in os.listdir(documents_country_path) if os.path.isdir(os.path.join(documents_country_path, d))]
+    available_languages = [d.name for d in documents_country_path.iterdir() if d.is_dir()]
     available_languages_str = ", ".join(available_languages)
 
     language = None
@@ -320,11 +320,13 @@ def main(args: argparse.Namespace) -> None:
         config.conversational_llm = args.conversational_llm
     
     # Set path to folder that contains documents
-    documents_path = os.path.join(args.documents_path, args.country, language)
+    documents_path = Path(args.documents_path) / args.country / language
 
     # Set path to vector database
-    embedding_model_path = config.embedding_model.split("/")
-    db_path = os.path.join(args.db_path, args.country, language, *embedding_model_path, "db_faiss")
+    db_path = Path(args.db_path) / args.country / language
+    for part in config.embedding_model.split("/"):
+        db_path = db_path / part
+    db_path = db_path / "db_faiss"
 
 
     # Setup HybridRetriever
