@@ -557,6 +557,9 @@ def main(args: argparse.Namespace) -> None:
 
     config = importlib.import_module(f"locales.{language}.config")
     
+    # Print welcome message
+    print(config.welcome_message)
+
     if args.embedding_model:
         config.embedding_model = args.embedding_model
     if args.rewriter_model:
