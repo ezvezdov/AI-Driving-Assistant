@@ -104,7 +104,7 @@ class ProcessorPDF():
         Retrieve all PDF file paths from the folder.
 
         Returns:
-            List[str]: List of PDF file paths.
+            List[Path]: List of PDF file paths.
 
         Raises:
             FileNotFoundError: If the folder does not exist.
@@ -311,7 +311,7 @@ class ConversationalLLM():
             openai_api_key=OPENAI_API_KEY
         )
 
-    def ask_llm(self, question: str, context: str):
+    def ask_llm(self, question: str, context: str) -> str :
         """
         Generate an answer conditioned on the user question and retrieved context.
 
