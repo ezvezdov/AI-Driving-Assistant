@@ -389,7 +389,7 @@ def main(args: argparse.Namespace) -> None:
             print(config.conversational_llm_output_block_message)
             continue
 
-        print("\nAnswer:", answer)
+        print("\n" + config.answer_message, answer)
 
 
 if __name__ == "__main__":

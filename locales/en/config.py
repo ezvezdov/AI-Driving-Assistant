@@ -118,6 +118,8 @@ Ask any question, and I'll fetch the most accurate info I can.
 
 ask_message = "❓ Ask your question: "
 
+answer_message = "💬 Answer: "
+
 question_block_message = "Your question was blocked 😢"
 
 conversational_llm_output_block_message = "Sorry, I can't provide a safe and accurate answer to that question."
