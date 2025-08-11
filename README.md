@@ -71,4 +71,40 @@ python3 main.py --country [Belarus|Czechia|UK]
 
 
 
+## 🧠 How It Works
+
+### Hight-level flow
+
+```
+┌─────────────────────┐      ┌───────────────────┐
+│  PDFs by locale     │      │  locales/<lang>/  │
+│  documents/<C>/<L>  │      │    config.py      │
+└─────────┬───────────┘      └─────────┬─────────┘
+          │                             │
+          ▼                             ▼
+   ProcessorPDF                   Runtime config
+(load → split chunks)             (models/prompts)
+          │
+          ▼
+  HybridRetriever ────────────────────────────────────────┐
+  (build/load FAISS + BM25)                               │
+          │                                               │
+          ▼                                               │
+    Rewriter LLM  →  {q1, q2, …, qn}                      │
+          │                         per qi:               │
+          │                     retrieve (FAISS+BM25)     │
+          └──────────────►  aggregate candidate docs ◄────┘
+                                   │
+                                   ▼
+                      CrossEncoder Reranker (top-k)
+                                   │
+                                   ▼
+                    Concatenate context (top-k chunks)
+                                   │
+                                   ▼
+                     Conversational LLM (answer)
+                                   │
+                                   ▼
+                         Output Guardrails check
+
 ```
