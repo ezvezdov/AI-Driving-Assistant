@@ -44,8 +44,21 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 ## ▶️ Usage
 
 ### 🏁 Basic command
+
 ```bash
-python3 main.py --country [Belarus|Czechia|UK] 
+# 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
+
+export OPENAI_API_KEY='your-api-key'
+
+python3 main.py --country [Belarus|Czechia|UK]
+```
+
+```ps1
+# 🪟 Windows
+
+setx OPENAI_API_KEY 'your-api-key'
+
+python main.py --country [Belarus|Czechia|UK]
 ```
 
 ### ⚙️ Optional arguments
