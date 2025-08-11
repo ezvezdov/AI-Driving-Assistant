@@ -88,6 +88,7 @@ python main.py --country [Belarus|Czechia|UK]
 | `--documents_path`       | Path to Documents (default: `documents`)                             |
 | `--db_path`              | Path to FAISS DB (default: `vectorstore`)                            |
 | `--vectorstore_recreate` | Recreate vectorstore from documents, if it exists (default: `False`) |
+| `--top_k`                | Number of top documents to return after reranking (default: `5`)     |
 
 ### Available commands during chatting
 

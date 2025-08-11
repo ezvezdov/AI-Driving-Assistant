@@ -40,6 +40,7 @@ parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
 parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to save/load FAISS DB")
 parser.add_argument("--documents_path", default="documents", type=str, help="Path to documents")
 parser.add_argument("--vectorstore_recreate", default=False, action='store_true', help="Recreate vectorstore from documents, if it exists")
+parser.add_argument("--top_k", default=5, type=int, help="Number of top documents to return after reranking")
 
 
 
@@ -108,13 +109,16 @@ class ProcessorPDF():
 
 
 class HybridRetriever():
-    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str, vectorstore_recreate: bool):
+    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str, vectorstore_recreate: bool, top_k: int):
 
         # Set vectorstore path
         self.vectorstore_path = vectorstore_path
 
         # Set documents path
         self.documents_path = documents_path
+
+        # Set top_k
+        self.top_k = top_k
 
         # Initialize embeddings model
         self.embeddings = HuggingFaceEmbeddings(
@@ -172,7 +176,7 @@ class HybridRetriever():
         return vectorstore
 
     def get_ensambled_retriever(self) -> EnsembleRetriever:
-        faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": 6})
+        faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": self.top_k})
         return EnsembleRetriever(
             retrievers=[faiss_retriever, self.bm25_retriever],
             weights=[0.5, 0.5]
@@ -219,10 +223,11 @@ class Rewriter:
 class Reranker:
     """Class to handle reranking of retrieved documents."""
 
-    def __init__(self, hf_model_name: str):
+    def __init__(self, hf_model_name: str, top_k: int):
         self.model = CrossEncoder(hf_model_name, device=torch_device)
+        self.top_k = top_k
 
-    def rerank(self, user_query: str, docs: List[Document], top_n: int = 5) -> List[Document]:
+    def rerank(self, user_query: str, docs: List[Document]) -> List[Document]:
         # Prepare pairs for scoring
         pairs = [(user_query, doc.page_content) for doc in docs]
 
@@ -232,8 +237,8 @@ class Reranker:
         # Sort docs by score, descending
         reranked = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
 
-        # Return only top_n
-        reranked_docs = [doc for doc, score in reranked[:top_n]]
+        # Return only `self.top_k`
+        reranked_docs = [doc for doc, score in reranked[:self.top_k]]
 
         return reranked_docs
 
@@ -317,7 +322,7 @@ def main(args: argparse.Namespace) -> None:
 
 
     # Setup HybridRetriever
-    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate)
+    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate, args.top_k)
 
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(
@@ -330,7 +335,7 @@ def main(args: argparse.Namespace) -> None:
     )
 
     # Setup Reranker
-    reranker = Reranker(config.reranker_model)
+    reranker = Reranker(config.reranker_model, args.top_k)
 
     # Setup Guardrails
     guardrails = Guardrails(
@@ -375,7 +380,7 @@ def main(args: argparse.Namespace) -> None:
             docs.extend(hybrid_retriever.invoke(q))
 
         # Rerank documents
-        reranked_docs = reranker.rerank(user_query, docs, top_n=5)
+        reranked_docs = reranker.rerank(user_query, docs)
 
         # Concatenate all retrieved documents as context
         context = "\n\n".join(doc.page_content for doc in reranked_docs)
