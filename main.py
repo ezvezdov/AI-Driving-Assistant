@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 import argparse
 import warnings
 import importlib
@@ -19,8 +20,9 @@ from sentence_transformers import CrossEncoder
 
 
 
-# Suppress FutureWarnings globally
+# Suppress noisy FutureWarnings from deps to keep console clean
 warnings.simplefilter(action='ignore', category=FutureWarning)
+logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
