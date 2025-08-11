@@ -13,7 +13,7 @@ A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific dr
 # 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
 git clone https://github.com/ezvezdov/AI-Driving-Assistant.git
 cd AI-Driving-Assistant
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install .
 
@@ -63,7 +63,7 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 
 export OPENAI_API_KEY='your-api-key'
 
-python3 main.py --country [Belarus|Czechia|UK]
+python main.py --country [Belarus|Czechia|UK]
 ```
 
 ```ps1
@@ -102,7 +102,7 @@ python main.py --country [Belarus|Czechia|UK]
 
 1. UK (United Kingdom), English language
 ```
-python3 main.py --country UK --language en
+python main.py --country UK --language en
 
 ❓ Ask your question: Which side of the road should I ride on?
 
@@ -111,7 +111,7 @@ python3 main.py --country UK --language en
 
 2. Czechia, Czech language
 ```
-python3 main.py --country Czechia --language cs
+python main.py --country Czechia --language cs
 
 
 ❓ Zadejte svou otázku: Čím se liší „zastavit“ od „zastavit vozidlo“?
@@ -123,7 +123,7 @@ python3 main.py --country Czechia --language cs
 
 3. Belarus, Belarusian language
 ```
-python3 main.py --country Belarus --language be
+python main.py --country Belarus --language be
 
 ❓ Задайце сваё пытанне: што такое абгон? 
 
