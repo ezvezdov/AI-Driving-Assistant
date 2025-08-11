@@ -167,3 +167,11 @@ python3 main.py --country Belarus --language be
                          Output Guardrails check
 
 ```
+
+### Modules description
+
++ **HybridRetriever** - uses vectorstore (FAISS) and BM25 to retrieve relevant documents based on the user query. Embeddings are generated using the specified **Hugging Face** embedding model from the locale config.
++ **Rewriter LLM** - reformulates the user query to improve retrieval results. It uses the specified **OpenAI** model from the locale config.
++ **CrossEncoder Reranker** - ranks the retrieved documents based on their relevance to the reformulated query. It uses the specified **Hugging Face** cross-encoder model from the locale config.
++ **Conversational LLM** - generates the final answer based on the concatenated context from the top-k chunks. It uses the specified **OpenAI** model from the locale config.
++ **Guardrails** - checks the generated answer against predefined rules to ensure it meets safety and quality standards. It uses the specified **OpenAI** model from the locale config.
