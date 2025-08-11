@@ -268,10 +268,10 @@ class Guardrails:
     def check_output(self, model_output: str) -> bool:
         formatted_prompt = self.output_prompt.format(model_output=model_output)
         response = self.llm.invoke(formatted_prompt)
-        if "no" in response.content.lower():
-            return True
-        else:
+        if "yes" in response.content.lower():
             return False
+        else:
+            return True
 
 
 def main(args: argparse.Namespace) -> None:
