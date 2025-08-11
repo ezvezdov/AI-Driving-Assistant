@@ -655,6 +655,4 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    main_args = parser.parse_args([] if "__file__" not in globals() else None)
-
-    main(main_args)
+    main(parser.parse_args())
