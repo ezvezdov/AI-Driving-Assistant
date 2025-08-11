@@ -42,6 +42,7 @@ parser.add_argument("--reranker_model", type=str, help="Reranker model")
 parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
 parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to save/load FAISS DB")
 parser.add_argument("--documents_path", default="documents", type=str, help="Path to documents")
+parser.add_argument("--vectorstore_recreate", default=False, action='store_true')
 
 
 
@@ -110,7 +111,7 @@ class ProcessorPDF():
 
 
 class HybridRetriever():
-    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str):
+    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str, vectorstore_recreate: bool):
 
         # Set vectorstore path
         self.vectorstore_path = vectorstore_path
@@ -125,14 +126,14 @@ class HybridRetriever():
             encode_kwargs={'normalize_embeddings': False}
         )
 
-        self.reload_retriever(use_exising_vectorstore=True)
+        self.reload_retriever(vectorstore_recreate=vectorstore_recreate)
         
 
     def invoke(self, user_query: str) -> List[Document]:
         return self.hybrid_retriever.invoke(user_query)
 
 
-    def reload_retriever(self, use_exising_vectorstore=False) -> None:
+    def reload_retriever(self, vectorstore_recreate: bool = True) -> None:
 
         # PDF processor
         proceesor_pdf = ProcessorPDF(self.documents_path)
@@ -141,7 +142,7 @@ class HybridRetriever():
         splits = proceesor_pdf.split_documents()
 
         # Vector search
-        self.vectorstore = self.create_vector_store(splits, use_exising_vectorstore)
+        self.vectorstore = self.create_vector_store(splits, vectorstore_recreate)
 
         # Keyword search
         self.bm25_retriever = BM25Retriever.from_documents(splits)
@@ -151,7 +152,7 @@ class HybridRetriever():
 
 
 
-    def create_vector_store(self, splits: List[Document], use_exising_vectorstore: bool) -> FAISS:
+    def create_vector_store(self, splits: List[Document], vectorstore_recreate: bool) -> FAISS:
         """Create and save vector store from document chunks.
 
         Args:
@@ -163,7 +164,7 @@ class HybridRetriever():
         """
 
         # Create and save vector store
-        if not os.path.exists(self.vectorstore_path) or not use_exising_vectorstore:
+        if not os.path.exists(self.vectorstore_path) or vectorstore_recreate:
             vectorstore = FAISS.from_documents(splits, self.embeddings)
             vectorstore.save_local(self.vectorstore_path)
 
@@ -319,7 +320,7 @@ def main(args: argparse.Namespace) -> None:
 
 
     # Setup HybridRetriever
-    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path)
+    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate)
 
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(
