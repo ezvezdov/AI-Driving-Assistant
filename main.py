@@ -548,6 +548,7 @@ def main(args: argparse.Namespace) -> None:
         language = available_languages[0]
     elif len(available_languages) == 0:
         print("Sorry, there are not documents for this country.")
+        exit(1)
     else:
         
         
