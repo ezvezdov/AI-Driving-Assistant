@@ -114,7 +114,9 @@ Ask any question, and I'll fetch the most accurate info I can.
 
 ⚠️ Note: I might make mistakes — always double-check important information with official sources.
 
-{help_message}"""
+{help_message}
+
+🏃‍➡️ Starting chat ..."""
 
 ask_message = "❓ Ask your question: "
 

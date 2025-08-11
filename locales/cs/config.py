@@ -116,7 +116,9 @@ Zeptejte se na cokoli a já se pokusím získat co nejpřesnější informace.
 
 ⚠️ Upozornění: Mohu se mýlit — důležité informace si vždy ověřte z oficiálních zdrojů.
 
-{help_message}"""
+{help_message}
+
+🏃‍➡️ Spouštím chat ..."""
 
 ask_message = "❓ Zadejte svou otázku: "
 
