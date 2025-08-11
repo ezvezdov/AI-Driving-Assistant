@@ -22,8 +22,9 @@ from sentence_transformers import CrossEncoder
 # Suppress FutureWarnings globally
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from _secrets import OPENAI_API_KEY
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
+# Set torch device
 torch_device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
