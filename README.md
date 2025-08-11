@@ -95,7 +95,35 @@ python main.py --country [Belarus|Czechia|UK]
 + `/quit` 🚪 - Exit the assistant
 + `/reload` 🔄 - Reload the retriever with updated documents"""
 
+### Example usage
 
+1. UK (United Kingdom), English language
+```
+python3 main.py --country UK --language en
+
+❓ Ask your question: Which side of the road should I ride on?
+
+💬 Answer:  Ride on the left — in the same direction as the traffic. Where noted (e.g. one‑way streets) move with the flow, keep to the left, and on narrow or busy roads (or round bends) ride single file (never more than two abreast).
+```
+
+2. Czechia, Czech language
+```
+python3 main.py --country Czechia --language cs
+
+
+❓ Zadejte svou otázku: Čím se liší „zastavit“ od „zastavit vozidlo“?
+
+💬 Odpověď:  Podle uvedeného kontextu:
+- „zastavit“ (definice o)) znamená úmyslně uvést vozidlo do klidu na dobu nezbytnou k bezodkladnému nastoupení/vystoupení osob nebo k naložení/složení nákladu (krátké, záměrné zastavení).
+- „zastavit vozidlo“ (definice p) a použití v souvislosti s nehodou) značí přerušit jízdu z důvodu nezávislého na vůli řidiče – tedy nucené, neúmyslné zastavení (např. v důsledku poruchy nebo nehody); v případě nehody navíc „neprodleně zastavit vozidlo“ znamená učinit tak bezodkladně, aby nedošlo k dalšímu ohrožení.
+```
+
+3. Belarus, Belarusian language
+```
+❓ Задайце сваё пытанне: што такое абгон? 
+
+💬 Адказ:  Па дадзеным кантэксце «абгон» — гэта праезд аднаго транспартнага сродку міма іншага, г.зн. абагнанне іншага транспартнага сродку.
+```
 
 ## 🧠 How It Works
 
