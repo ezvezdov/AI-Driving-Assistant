@@ -537,7 +537,7 @@ def main(args: argparse.Namespace) -> None:
     language = None
 
     # Use provided language (from --language) if it possible
-    if not args.language is None:
+    if args.language is not None:
         if args.language in available_languages:
             language = args.language
         else:
