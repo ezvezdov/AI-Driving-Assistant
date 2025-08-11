@@ -279,6 +279,9 @@ class Guardrails:
 def main(args: argparse.Namespace) -> None:
     """Main function to run the RAG system."""
 
+    # Print welcome message
+    print(config.welcome_message)
+
     documents_country_path = Path(args.documents_path) / args.country
 
     # Retrieve available languages
@@ -353,10 +356,6 @@ def main(args: argparse.Namespace) -> None:
     )
 
     
-
-    # Print welcome message
-    print(config.welcome_message)
-
     while True:
         print("-" * shutil.get_terminal_size().columns)
         user_query = input(config.ask_message)
