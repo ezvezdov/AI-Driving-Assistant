@@ -10,10 +10,18 @@ A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific dr
 ## ⚙️ Installation
 
 ```bash
+# 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
 git clone https://github.com/ezvezdov/AI-Driving-Assistant.git
 cd AI-Driving-Assistant
 python3 -m venv .venv
 source .venv/bin/activate
+pip install .
+
+# 🪟 Windows
+git clone https://github.com/ezvezdov/AI-Driving-Assistant.git
+cd AI-Driving-Assistant
+python -m venv .venv
+.\.venv\Scripts\activate
 pip install .
 ```
 
