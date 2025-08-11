@@ -25,7 +25,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # Set torch device
-torch_device = "cuda" if torch.cuda.is_available() else "cpu"
+TORCH_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 parser = argparse.ArgumentParser()
@@ -41,11 +41,13 @@ parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to 
 parser.add_argument("--documents_path", default="documents", type=str, help="Path to documents")
 parser.add_argument("--vectorstore_recreate", default=False, action='store_true', help="Recreate vectorstore from documents, if it exists")
 parser.add_argument("--top_k", default=5, type=int, help="Number of top documents to return after reranking")
+parser.add_argument("--chunk_size", default=1000, type=int, help="Max characters per chunk after splitting")
+parser.add_argument("--chunk_overlap", default=200, type=int, help="Overlap size between adjacent chunks")
 
 
 
 class ProcessorPDF():
-    def __init__(self, folder_path: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> None:
+    def __init__(self, folder_path: str, chunk_size: int, chunk_overlap: int) -> None:
         self.folder_path = folder_path
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
@@ -109,7 +111,7 @@ class ProcessorPDF():
 
 
 class HybridRetriever():
-    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str, vectorstore_recreate: bool, top_k: int):
+    def __init__(self, vectorstore_path: str, embedding_model: str, documents_path: str, vectorstore_recreate: bool, top_k: int, chunk_size: int, chunk_overlap: int) -> None:
 
         # Set vectorstore path
         self.vectorstore_path = vectorstore_path
@@ -119,11 +121,13 @@ class HybridRetriever():
 
         # Set top_k
         self.top_k = top_k
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
 
         # Initialize embeddings model
         self.embeddings = HuggingFaceEmbeddings(
             model_name=embedding_model,
-            model_kwargs={'device': torch_device},
+            model_kwargs={'device': TORCH_DEVICE},
             encode_kwargs={'normalize_embeddings': False}
         )
 
@@ -137,10 +141,10 @@ class HybridRetriever():
     def reload_retriever(self, vectorstore_recreate: bool = True) -> None:
 
         # PDF processor
-        proceesor_pdf = ProcessorPDF(self.documents_path)
+        processor_pdf = ProcessorPDF(self.documents_path, self.chunk_size, self.chunk_overlap)
 
         # Split documents
-        splits = proceesor_pdf.split_documents()
+        splits = processor_pdf.split_documents()
 
         # Vector search
         self.vectorstore = self.create_vector_store(splits, vectorstore_recreate)
@@ -224,7 +228,7 @@ class Reranker:
     """Class to handle reranking of retrieved documents."""
 
     def __init__(self, hf_model_name: str, top_k: int):
-        self.model = CrossEncoder(hf_model_name, device=torch_device)
+        self.model = CrossEncoder(hf_model_name, device=TORCH_DEVICE)
         self.top_k = top_k
 
     def rerank(self, user_query: str, docs: List[Document]) -> List[Document]:
@@ -322,7 +326,7 @@ def main(args: argparse.Namespace) -> None:
 
 
     # Setup HybridRetriever
-    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate, args.top_k)
+    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate, args.top_k, args.chunk_size, args.chunk_overlap)
 
     # Setup Conversational LLM
     conversational_llm = Conversational_LLM(

@@ -89,6 +89,8 @@ python main.py --country [Belarus|Czechia|UK]
 | `--db_path`              | Path to FAISS DB (default: `vectorstore`)                            |
 | `--vectorstore_recreate` | Recreate vectorstore from documents, if it exists (default: `False`) |
 | `--top_k`                | Number of top documents to return after reranking (default: `5`)     |
+| `--chunk_size`           | Max characters per chunk after splitting (default: `1000`)           |
+| `--chunk_overlap`        | Overlap size between adjacent chunks (default: `200`)                |
 
 ### Available commands during chatting
 
