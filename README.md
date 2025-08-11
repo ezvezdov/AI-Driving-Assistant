@@ -175,3 +175,10 @@ python3 main.py --country Belarus --language be
 + **CrossEncoder Reranker** - ranks the retrieved documents based on their relevance to the reformulated query. It uses the specified **Hugging Face** cross-encoder model from the locale config.
 + **Conversational LLM** - generates the final answer based on the concatenated context from the top-k chunks. It uses the specified **OpenAI** model from the locale config.
 + **Guardrails** - checks the generated answer against predefined rules to ensure it meets safety and quality standards. It uses the specified **OpenAI** model from the locale config.
+
+## Future Improvements
+- [ ] Add support for using local conversational LLMs (e.g., DeepSeek, Llama, etc.) as an alternative to OpenAI. (I tested `deepseek-r1:1.5b`, but its performance with Czech and Belarusian was poor.)
+- [ ] Add possibility to use local guardrails instead of OpenAI.
+- [ ] Add possibility to use local rewriter models instead of OpenAI.
+- [ ] Add possibility to use OpenAI embeddings instead of Hugging Face.
+- [ ] Add possibility to use OpenAI reranker model instead of Hugging Face.
