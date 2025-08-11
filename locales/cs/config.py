@@ -107,7 +107,8 @@ conversational_llm_prompt_text = """
 
 help_message = """Dostupné příkazy:
 /help - Zobrazí nápovědu
-/quit - Ukončí asistenta"""
+/quit - Ukončí asistenta
+/reload - Znovu načíst vyhledávač s aktualizovanými dokumenty"""
 
 welcome_message = f"""🚗 Vítejte v AI Asistentovi pro řízení!
 Váš pomocník pro rychlé odpovědi na otázky o pravidlech a předpisech silničního provozu.

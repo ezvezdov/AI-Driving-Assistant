@@ -105,7 +105,8 @@ conversational_llm_prompt_text = """
 
 help_message = """Available commands:
 /help - Show help message
-/quit - Exit the assistant"""
+/quit - Exit the assistant
+/reload - Reload the retriever with updated documents"""
 
 welcome_message = f"""🚗 Welcome to AI Driving Assistant!
 Your assistant for quick answers about driving rules and regulations.
