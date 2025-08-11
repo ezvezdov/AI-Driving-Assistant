@@ -123,6 +123,8 @@ python3 main.py --country Czechia --language cs
 
 3. Belarus, Belarusian language
 ```
+python3 main.py --country Belarus --language be
+
 ❓ Задайце сваё пытанне: што такое абгон? 
 
 💬 Адказ:  Па дадзеным кантэксце «абгон» — гэта праезд аднаго транспартнага сродку міма іншага, г.зн. абагнанне іншага транспартнага сродку.
