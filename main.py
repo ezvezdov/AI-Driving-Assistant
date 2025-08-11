@@ -525,9 +525,6 @@ def main(args: argparse.Namespace) -> None:
         Exception: Propagates errors from model clients or I/O as they occur.
     """
 
-    # Print welcome message
-    print(config.welcome_message)
-
     documents_country_path = Path(args.documents_path) / args.country
 
     # Retrieve available languages
