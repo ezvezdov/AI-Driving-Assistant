@@ -1,6 +1,11 @@
 # 🤖🚗 AI Driving Assistant
 A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific driving regulation questions using provided documents as the knowledge source.
 
+🎓 This project was developed as part of the **Language Technologies in Practice** ([NPFL128](https://ufal.mff.cuni.cz/courses/npfl128)) course at **CUNI MFF**.
+
+💡 Inspired by and building upon the concepts from the blog post [Emerging Patterns in Building GenAI Products](https://martinfowler.com/articles/gen-ai-patterns/) by Bharani Subramaniam & Martin Fowler.
+
+📑 I also created a presentation summarizing the blog post, available here: [Google Slides link](https://docs.google.com/presentation/d/1FYDCcIA5clFAhHEnmLEPT0t6cucdbtr5G1096XSKaAk/edit?usp=sharing).
 
 ## ⚙️ Installation
 
