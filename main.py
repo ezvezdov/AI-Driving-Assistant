@@ -7,7 +7,7 @@ import importlib
 from pathlib import Path
 
 import torch
-from typing import List, Tuple, Any, Optional
+from typing import List
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -18,7 +18,6 @@ from langchain_core.documents import Document
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from sentence_transformers import CrossEncoder
-
 
 
 # Suppress noisy FutureWarnings from deps to keep console clean
@@ -36,20 +35,28 @@ TORCH_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # -----------------------
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str, help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
+parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str,
+                    help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
 parser.add_argument("--language", type=str, help="Language.")
-parser.add_argument("--embedding_model", type=str, help="Embedding model (for vector search)")
+parser.add_argument("--embedding_model", type=str,
+                    help="Embedding model (for vector search)")
 parser.add_argument("--rewriter_model", type=str, help="Rewriter model")
 parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
 parser.add_argument("--reranker_model", type=str, help="Reranker model")
-parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
-parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to save/load FAISS DB")
-parser.add_argument("--documents_path", default="documents", type=str, help="Path to documents")
-parser.add_argument("--vectorstore_recreate", default=False, action='store_true', help="Recreate vectorstore from documents, if it exists")
-parser.add_argument("--top_k", default=5, type=int, help="Number of top documents to return after reranking")
-parser.add_argument("--chunk_size", default=1000, type=int, help="Max characters per chunk after splitting")
-parser.add_argument("--chunk_overlap", default=200, type=int, help="Overlap size between adjacent chunks")
-
+parser.add_argument("--conversational_llm", type=str,
+                    help="Conversational LLM")
+parser.add_argument("--db_path", default="vectorstore",
+                    type=str, help="Path to save/load FAISS DB")
+parser.add_argument("--documents_path", default="documents",
+                    type=str, help="Path to documents")
+parser.add_argument("--vectorstore_recreate", default=False, action='store_true',
+                    help="Recreate vectorstore from documents, if it exists")
+parser.add_argument("--top_k", default=5, type=int,
+                    help="Number of top documents to return after reranking")
+parser.add_argument("--chunk_size", default=1000, type=int,
+                    help="Max characters per chunk after splitting")
+parser.add_argument("--chunk_overlap", default=200, type=int,
+                    help="Overlap size between adjacent chunks")
 
 
 class ProcessorPDF():
@@ -82,7 +89,6 @@ class ProcessorPDF():
 
         self.documents = self.reload_documents()
 
-
     def reload_documents(self) -> List[Document]:
         """
         Load all PDF documents from the folder and return them as Document objects.
@@ -90,13 +96,13 @@ class ProcessorPDF():
         Returns:
             List[Document]: List of loaded documents.
         """
-                
+
         pdf_files_paths = self.get_pdf_paths()
 
         documents = []
         for pdf_path in pdf_files_paths:
             documents.extend(self.load_pdf(pdf_path))
-        
+
         return documents
 
     def get_pdf_paths(self) -> List[str]:
@@ -112,8 +118,9 @@ class ProcessorPDF():
 
         # Check if the folder exists
         if not self.folder_path.exists():
-            raise FileNotFoundError(f"The folder {self.folder_path} does not exist.")
-        
+            raise FileNotFoundError(
+                f"The folder {self.folder_path} does not exist.")
+
         pdf_files = []
 
         # Walk through the directory and add PDF files to the list
@@ -122,7 +129,6 @@ class ProcessorPDF():
                 pdf_files.append(pdf_path)
 
         return pdf_files
-
 
     def load_pdf(self, pdf_path: Path) -> List[Document]:
         """
@@ -146,7 +152,6 @@ class ProcessorPDF():
         Returns:
             List[Document]: List of split Document objects.
         """
-
 
         splits = self.text_splitter.split_documents(self.documents)
 
@@ -202,7 +207,6 @@ class HybridRetriever():
         )
 
         self.reload_retriever(vectorstore_recreate=vectorstore_recreate)
-        
 
     def invoke(self, user_query: str) -> List[Document]:
         """
@@ -217,7 +221,6 @@ class HybridRetriever():
 
         return self.hybrid_retriever.invoke(user_query)
 
-
     def reload_retriever(self, vectorstore_recreate: bool = True) -> None:
         """
         Reload the retriever pipeline, recreating vectorstore if needed.
@@ -227,21 +230,21 @@ class HybridRetriever():
         """
 
         # PDF processor
-        processor_pdf = ProcessorPDF(self.documents_path, self.chunk_size, self.chunk_overlap)
+        processor_pdf = ProcessorPDF(
+            self.documents_path, self.chunk_size, self.chunk_overlap)
 
         # Split documents
         splits = processor_pdf.split_documents()
 
         # Vector search
-        self.vectorstore = self.create_vector_store(splits, vectorstore_recreate)
+        self.vectorstore = self.create_vector_store(
+            splits, vectorstore_recreate)
 
         # Keyword search
         self.bm25_retriever = BM25Retriever.from_documents(splits)
 
         # Combine searches
         self.hybrid_retriever = self.get_ensembled_retriever()
-
-
 
     def create_vector_store(self, splits: List[Document], vectorstore_recreate: bool) -> FAISS:
         """
@@ -274,7 +277,8 @@ class HybridRetriever():
             EnsembleRetriever: Weighted hybrid retriever.
         """
 
-        faiss_retriever = self.vectorstore.as_retriever(search_kwargs={"k": self.top_k})
+        faiss_retriever = self.vectorstore.as_retriever(
+            search_kwargs={"k": self.top_k})
         return EnsembleRetriever(
             retrievers=[faiss_retriever, self.bm25_retriever],
             weights=[0.5, 0.5]
@@ -311,7 +315,7 @@ class ConversationalLLM():
             openai_api_key=OPENAI_API_KEY
         )
 
-    def ask_llm(self, question: str, context: str) -> str :
+    def ask_llm(self, question: str, context: str) -> str:
         """
         Generate an answer conditioned on the user question and retrieved context.
 
@@ -347,7 +351,7 @@ class Rewriter:
             rewriter_llm (str): Chat model name used for rewriting.
             prompt_text (str): Prompt template string for generating variants.
         """
-        
+
         self.llm = ChatOpenAI(
             model_name=rewriter_llm,
             openai_api_key=OPENAI_API_KEY
@@ -370,7 +374,8 @@ class Rewriter:
 
         formatted_prompt = self.prompt.format(user_query=user_query)
         response = self.llm.invoke(formatted_prompt)
-        versions = [v.strip() for v in response.content.split("===") if v and not v.startswith("Version")]
+        versions = [v.strip() for v in response.content.split(
+            "===") if v and not v.startswith("Version")]
 
         return versions
 
@@ -473,7 +478,6 @@ class Guardrails:
             return False
         else:
             return True
-            
 
     def check_output(self, model_output: str) -> bool:
         """
@@ -528,7 +532,8 @@ def main(args: argparse.Namespace) -> None:
     documents_country_path = Path(args.documents_path) / args.country
 
     # Retrieve available languages
-    available_languages = [d.name for d in documents_country_path.iterdir() if d.is_dir()]
+    available_languages = [
+        d.name for d in documents_country_path.iterdir() if d.is_dir()]
     available_languages_str = ", ".join(available_languages)
 
     language = None
@@ -538,23 +543,22 @@ def main(args: argparse.Namespace) -> None:
         if args.language in available_languages:
             language = args.language
         else:
-            print("Language selected by --language is not available for this country.\nAvailable languages: ", available_languages_str)
-        
-    
+            print("Language selected by --language is not available for this country.\nAvailable languages: ",
+                  available_languages_str)
+
     if len(available_languages) == 1:
         language = available_languages[0]
     elif len(available_languages) == 0:
         print("Sorry, there are not documents for this country.")
         exit(1)
     else:
-        
-        
+
         while language not in available_languages:
-            language = input(f"Please, choose the language [{available_languages_str}] : ")
-        
+            language = input(
+                f"Please, choose the language [{available_languages_str}] : ")
 
     config = importlib.import_module(f"locales.{language}.config")
-    
+
     # Print welcome message
     print(config.welcome_message)
 
@@ -568,7 +572,7 @@ def main(args: argparse.Namespace) -> None:
         config.reranker_model = args.reranker_model
     if args.conversational_llm:
         config.conversational_llm = args.conversational_llm
-    
+
     # Set path to folder that contains documents
     documents_path = Path(args.documents_path) / args.country / language
 
@@ -578,9 +582,9 @@ def main(args: argparse.Namespace) -> None:
         db_path = db_path / part
     db_path = db_path / "db_faiss"
 
-
     # Setup HybridRetriever
-    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path, args.vectorstore_recreate, args.top_k, args.chunk_size, args.chunk_overlap)
+    hybrid_retriever = HybridRetriever(db_path, config.embedding_model, documents_path,
+                                       args.vectorstore_recreate, args.top_k, args.chunk_size, args.chunk_overlap)
 
     # Setup Conversational LLM
     conversational_llm = ConversationalLLM(
@@ -620,8 +624,6 @@ def main(args: argparse.Namespace) -> None:
             print(config.end_document_rescan_message)
             continue
 
-
-
         # Check input
         guardrails_check = guardrails.check_input(user_query)
         if not guardrails_check:
@@ -650,7 +652,7 @@ def main(args: argparse.Namespace) -> None:
         if not guardrails_check:
             print(config.conversational_llm_output_block_message)
             continue
-        
+
         # Print the answer
         print("\n" + config.answer_message, answer)
 
