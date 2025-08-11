@@ -116,7 +116,7 @@ Ask any question, and I'll fetch the most accurate info I can.
 
 {help_message}
 
-🏃‍➡️ Starting chat ..."""
+🏃‍ Starting chat ..."""
 
 ask_message = "❓ Ask your question: "
 

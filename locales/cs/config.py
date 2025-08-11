@@ -118,7 +118,7 @@ Zeptejte se na cokoli a já se pokusím získat co nejpřesnější informace.
 
 {help_message}
 
-🏃‍➡️ Spouštím chat ..."""
+🏃‍ Spouštím chat ..."""
 
 ask_message = "❓ Zadejte svou otázku: "
 
