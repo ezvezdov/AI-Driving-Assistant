@@ -42,7 +42,7 @@ parser.add_argument("--reranker_model", type=str, help="Reranker model")
 parser.add_argument("--conversational_llm", type=str, help="Conversational LLM")
 parser.add_argument("--db_path", default="vectorstore", type=str, help="Path to save/load FAISS DB")
 parser.add_argument("--documents_path", default="documents", type=str, help="Path to documents")
-parser.add_argument("--vectorstore_recreate", default=False, action='store_true')
+parser.add_argument("--vectorstore_recreate", default=False, action='store_true', help="Recreate vectorstore from documents, if it exists")
 
 
 
