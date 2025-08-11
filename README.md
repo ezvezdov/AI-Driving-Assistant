@@ -7,6 +7,22 @@ A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific dr
 
 📑 I also created a presentation summarizing the blog post, available here: [Google Slides link](https://docs.google.com/presentation/d/1FYDCcIA5clFAhHEnmLEPT0t6cucdbtr5G1096XSKaAk/edit?usp=sharing).
 
+## Dependencies
+
+This project relies on the OpenAI API for language model inference.  
+You will need a valid **OpenAI API key** to run it.
+1. Create an account at [OpenAI](https://platform.openai.com/).
+2. Top up your account with credits at [OpenAI Billing](https://platform.openai.com/settings/organization/billing/overview) (5$ is enough).
+3. Generate an API key from your [API Keys](https://platform.openai.com/account/api-keys) page.
+4. Set the key as an environment variable before running the application:
+```bash
+    # 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
+   export OPENAI_API_KEY='your-api-key'
+
+   # 🪟 Windows
+    setx OPENAI_API_KEY 'your-api-key'
+```
+
 ## ⚙️ Installation
 
 ```bash
