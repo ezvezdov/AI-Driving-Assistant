@@ -2,8 +2,10 @@
 A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific driving regulation questions using provided documents as the knowledge source.
 
 
-## Installation
+## ⚙️ Installation
+
 ```bash
+git clone ...
 cd RAG
 python3 -m venv .venv
 source .venv/bin/activate
