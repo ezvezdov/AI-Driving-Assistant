@@ -16,7 +16,7 @@ You will need a valid **OpenAI API key** to run it.
 3. Generate an API key from your [API Keys](https://platform.openai.com/account/api-keys) page.
 4. Set the key as an environment variable before running the application:
 ```bash
-    # 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
+    # 🐧🍎 UNIX-like (Linux, macOS, BSD)
    export OPENAI_API_KEY='your-api-key'
 
    # 🪟 Windows
@@ -26,7 +26,7 @@ You will need a valid **OpenAI API key** to run it.
 ## ⚙️ Installation
 
 ```bash
-# 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
+# 🐧🍎 UNIX-like (Linux, macOS, BSD)
 git clone https://github.com/ezvezdov/AI-Driving-Assistant.git
 cd AI-Driving-Assistant
 python -m venv .venv
@@ -59,10 +59,10 @@ documents/
 📄 Supported file types: `.pdf`
 
 ### 📝 Example documents
-You can create example knowledge base using scripts `scripts/example_documents.sh` and `scripts/example_documents.ps1`: 
+You can create example knowledge base using scripts `scripts/example_documents.sh` (UNIX) or `scripts/example_documents.ps1` (Windows): 
 
 ```bash
-# 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
+# 🐧🍎 UNIX-like (Linux, macOS, BSD)
 ./scripts/example_documents.sh
 
 # 🪟 Windows
@@ -75,7 +75,7 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 ### 🏁 Basic command
 
 ```bash
-# 🐧🍎 POSIX shell (Linux, macOS, BSD, etc.)
+# 🐧🍎 UNIX-like (Linux, macOS, BSD)
 
 export OPENAI_API_KEY='your-api-key'
 
