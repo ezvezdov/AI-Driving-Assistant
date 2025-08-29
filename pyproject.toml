@@ -1,5 +1,5 @@
 [project]
-name = "rag"
+name = "AI-Driving-Assistant"
 version = "0.1.0"
 description = "A RAG-based chatbot that answers country-specific driving regulation questions using provided documents as its knowledge source."
 readme = "README.md"
