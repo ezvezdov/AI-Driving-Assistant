@@ -44,7 +44,7 @@ pip install .
 ## 📚 Preparation: Knowledge Base
 
 ### 📂 Structure
-Knowledge Base contain driving regulations, which organized by country and language in `documetns/`.
+Knowledge Base contains driving regulations, organized by country and language in `documents/`.
 `documents/` folder should have this structure: 
 ```
 documents/
