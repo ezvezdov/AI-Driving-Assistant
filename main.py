@@ -30,34 +30,6 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 # Set torch device
 TORCH_DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# -----------------------
-# CLI ARGUMENTS
-# -----------------------
-parser = argparse.ArgumentParser()
-
-parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str,
-                    help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
-parser.add_argument("--language", type=str, help="Language.")
-parser.add_argument("--embedding_model", type=str,
-                    help="Embedding model (for vector search)")
-parser.add_argument("--rewriter_model", type=str, help="Rewriter model")
-parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
-parser.add_argument("--reranker_model", type=str, help="Reranker model")
-parser.add_argument("--conversational_llm", type=str,
-                    help="Conversational LLM")
-parser.add_argument("--db_path", default="vectorstore",
-                    type=str, help="Path to save/load FAISS DB")
-parser.add_argument("--documents_path", default="documents",
-                    type=str, help="Path to documents")
-parser.add_argument("--vectorstore_recreate", default=False, action='store_true',
-                    help="Recreate vectorstore from documents, if it exists")
-parser.add_argument("--top_k", default=5, type=int,
-                    help="Number of top documents to return after reranking")
-parser.add_argument("--chunk_size", default=1000, type=int,
-                    help="Max characters per chunk after splitting")
-parser.add_argument("--chunk_overlap", default=200, type=int,
-                    help="Overlap size between adjacent chunks")
-
 
 class ProcessorPDF():
     """
@@ -658,4 +630,31 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
+
+    # CLI arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--country", choices=['Czechia', 'Belarus', 'UK'], required=True, type=str,
+                        help="Country for which you want to retrieve driving regulations [Czechia, Belarus, UK].")
+    parser.add_argument("--language", type=str, help="Language.")
+    parser.add_argument("--embedding_model", type=str,
+                        help="Embedding model (for vector search)")
+    parser.add_argument("--rewriter_model", type=str, help="Rewriter model")
+    parser.add_argument("--guardrails_model", type=str, help="Guardrails model")
+    parser.add_argument("--reranker_model", type=str, help="Reranker model")
+    parser.add_argument("--conversational_llm", type=str,
+                        help="Conversational LLM")
+    parser.add_argument("--db_path", default="vectorstore",
+                        type=str, help="Path to save/load FAISS DB")
+    parser.add_argument("--documents_path", default="documents",
+                        type=str, help="Path to documents")
+    parser.add_argument("--vectorstore_recreate", default=False, action='store_true',
+                        help="Recreate vectorstore from documents, if it exists")
+    parser.add_argument("--top_k", default=5, type=int,
+                        help="Number of top documents to return after reranking")
+    parser.add_argument("--chunk_size", default=1000, type=int,
+                        help="Max characters per chunk after splitting")
+    parser.add_argument("--chunk_overlap", default=200, type=int,
+                        help="Overlap size between adjacent chunks")
+
+    # Call main with parsed arguments
     main(parser.parse_args())
