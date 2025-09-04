@@ -1,1 +1,200 @@
-# RAG
+# 🤖🚗 AI Driving Assistant
+A Retrieval-Augmented Generation (RAG) chatbot for answering country-specific driving regulation questions using provided documents as the knowledge source.
+
+🎓 This project was developed as part of the **Language Technologies in Practice** ([NPFL128](https://ufal.mff.cuni.cz/courses/npfl128)) course at **CUNI MFF**.
+
+💡 Inspired by and building upon the concepts from the blog post [Emerging Patterns in Building GenAI Products](https://martinfowler.com/articles/gen-ai-patterns/) by Bharani Subramaniam & Martin Fowler.
+
+📑 I also created a presentation summarizing the blog post, available here: [Google Slides link](https://docs.google.com/presentation/d/1FYDCcIA5clFAhHEnmLEPT0t6cucdbtr5G1096XSKaAk/edit?usp=sharing).
+
+## Dependencies
+
+This project relies on the OpenAI API for language model inference.  
+You will need a valid **OpenAI API key** to run it.
+1. Create an account at [OpenAI](https://platform.openai.com/).
+2. Top up your account with credits at [OpenAI Billing](https://platform.openai.com/settings/organization/billing/overview) (5$ is enough).
+3. Generate an API key from your [API Keys](https://platform.openai.com/account/api-keys) page.
+4. Set the key as an environment variable before running the application:
+```bash
+    # 🐧🍎 UNIX-like (Linux, macOS, BSD)
+   export OPENAI_API_KEY='your-api-key'
+
+   # 🪟 Windows
+    setx OPENAI_API_KEY 'your-api-key'
+```
+
+## ⚙️ Installation
+
+```bash
+# 🐧🍎 UNIX-like (Linux, macOS, BSD)
+git clone https://github.com/ezvezdov/AI-Driving-Assistant.git
+cd AI-Driving-Assistant
+python -m venv .venv
+source .venv/bin/activate
+pip install .
+
+# 🪟 Windows
+git clone https://github.com/ezvezdov/AI-Driving-Assistant.git
+cd AI-Driving-Assistant
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install .
+```
+
+## 📚 Preparation: Knowledge Base
+
+### 📂 Structure
+Knowledge Base contains driving regulations, organized by country and language in `documents/`.
+`documents/` folder should have this structure: 
+```
+documents/
+├── Czechia/
+│   ├── cs/
+│   │   ├── regulation1.pdf
+│   │   └── regulation2.pdf
+│   └── en/
+└── UK/
+    └── en/
+```
+📄 Supported file types: `.pdf`
+
+### 📝 Example documents
+You can create example knowledge base using scripts `scripts/example_documents.sh` (UNIX) or `scripts/example_documents.ps1` (Windows): 
+
+```bash
+# 🐧🍎 UNIX-like (Linux, macOS, BSD)
+./scripts/example_documents.sh
+
+# 🪟 Windows
+Set-ExecutionPolicy -Scope Process Bypass -Force
+.\scripts\example_documents.ps1
+```
+
+## ▶️ Usage
+
+### 🏁 Basic command
+
+```bash
+# 🐧🍎 UNIX-like (Linux, macOS, BSD)
+
+export OPENAI_API_KEY='your-api-key'
+
+python main.py --country [Belarus|Czechia|UK]
+```
+
+```ps1
+# 🪟 Windows
+
+setx OPENAI_API_KEY 'your-api-key'
+
+python main.py --country [Belarus|Czechia|UK]
+```
+
+### ⚙️ Optional arguments
+
+| Argument                 | Description                                                          |
+| ------------------------ | -------------------------------------------------------------------- |
+| `--country`              | **Required.** Country name (`Belarus`, `Czechia`, , `UK`)            |
+| `--language`             | Optional. Language folder name (e.g., `be`, `en`, `cs`)              |
+| `--embedding_model`      | Override embedding model in locale config                            |
+| `--rewriter_model`       | Override rewriter LLM                                                |
+| `--guardrails_model`     | Override guardrails LLM                                              |
+| `--reranker_model`       | Override reranker cross-encoder                                      |
+| `--conversational_llm`   | Override conversational LLM                                          |
+| `--documents_path`       | Path to Documents (default: `documents`)                             |
+| `--db_path`              | Path to FAISS DB (default: `vectorstore`)                            |
+| `--vectorstore_recreate` | Recreate vectorstore from documents, if it exists (default: `False`) |
+| `--top_k`                | Number of top documents to return after reranking (default: `5`)     |
+| `--chunk_size`           | Max characters per chunk after splitting (default: `1000`)           |
+| `--chunk_overlap`        | Overlap size between adjacent chunks (default: `200`)                |
+
+### Available commands during chatting
+
++ `/help` ❓ -  Show help message
++ `/quit` 🚪 - Exit the assistant
++ `/reload` 🔄 - Reload the retriever with updated documents"""
+
+### Example usage
+
+1. UK (United Kingdom), English language
+```
+python main.py --country UK --language en
+
+❓ Ask your question: Which side of the road should I ride on?
+
+💬 Answer:  Ride on the left — in the same direction as the traffic. Where noted (e.g. one‑way streets) move with the flow, keep to the left, and on narrow or busy roads (or round bends) ride single file (never more than two abreast).
+```
+
+2. Czechia, Czech language
+```
+python main.py --country Czechia --language cs
+
+
+❓ Zadejte svou otázku: Čím se liší „zastavit“ od „zastavit vozidlo“?
+
+💬 Odpověď:  Podle uvedeného kontextu:
+- „zastavit“ (definice o)) znamená úmyslně uvést vozidlo do klidu na dobu nezbytnou k bezodkladnému nastoupení/vystoupení osob nebo k naložení/složení nákladu (krátké, záměrné zastavení).
+- „zastavit vozidlo“ (definice p) a použití v souvislosti s nehodou) značí přerušit jízdu z důvodu nezávislého na vůli řidiče – tedy nucené, neúmyslné zastavení (např. v důsledku poruchy nebo nehody); v případě nehody navíc „neprodleně zastavit vozidlo“ znamená učinit tak bezodkladně, aby nedošlo k dalšímu ohrožení.
+```
+
+3. Belarus, Belarusian language
+```
+python main.py --country Belarus --language be
+
+❓ Задайце сваё пытанне: што такое абгон? 
+
+💬 Адказ:  Па дадзеным кантэксце «абгон» — гэта праезд аднаго транспартнага сродку міма іншага, г.зн. абагнанне іншага транспартнага сродку.
+```
+
+## 🧠 How It Works
+
+### Hight-level flow
+
+```
+┌─────────────────────┐      ┌───────────────────┐
+│  PDFs by locale     │      │  locales/<lang>/  │
+│  documents/<C>/<L>  │      │    config.py      │
+└─────────┬───────────┘      └─────────┬─────────┘
+          │                             │
+          ▼                             ▼
+   ProcessorPDF                   Runtime config
+(load → split chunks)             (models/prompts)
+          │
+          ▼
+  HybridRetriever ────────────────────────────────────────┐
+  (build/load FAISS + BM25)                               │
+          │                                               │
+          ▼                                               │
+    Rewriter LLM  →  {q1, q2, …, qn}                      │
+          │                         per qi:               │
+          │                     retrieve (FAISS+BM25)     │
+          └──────────────►  aggregate candidate docs ◄────┘
+                                   │
+                                   ▼
+                      CrossEncoder Reranker (top-k)
+                                   │
+                                   ▼
+                    Concatenate context (top-k chunks)
+                                   │
+                                   ▼
+                     Conversational LLM (answer)
+                                   │
+                                   ▼
+                         Output Guardrails check
+
+```
+
+### Modules description
+
++ **HybridRetriever** - uses vectorstore (FAISS) and BM25 to retrieve relevant documents based on the user query. Embeddings are generated using the specified **Hugging Face** embedding model from the locale config.
++ **Rewriter LLM** - reformulates the user query to improve retrieval results. It uses the specified **OpenAI** model from the locale config.
++ **CrossEncoder Reranker** - ranks the retrieved documents based on their relevance to the reformulated query. It uses the specified **Hugging Face** cross-encoder model from the locale config.
++ **Conversational LLM** - generates the final answer based on the concatenated context from the top-k chunks. It uses the specified **OpenAI** model from the locale config.
++ **Guardrails** - checks the generated answer against predefined rules to ensure it meets safety and quality standards. It uses the specified **OpenAI** model from the locale config.
+
+## Future Improvements
+- [ ] Add support for using local conversational LLMs (e.g., DeepSeek, Llama, etc.) as an alternative to OpenAI. (I tested `deepseek-r1:1.5b`, but its performance with Czech and Belarusian was poor.)
+- [ ] Add possibility to use local guardrails instead of OpenAI.
+- [ ] Add possibility to use local rewriter models instead of OpenAI.
+- [ ] Add possibility to use OpenAI embeddings instead of Hugging Face.
+- [ ] Add possibility to use OpenAI reranker model instead of Hugging Face.
